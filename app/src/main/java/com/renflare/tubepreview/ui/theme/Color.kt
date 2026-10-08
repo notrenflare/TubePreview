@@ -6,10 +6,10 @@ import androidx.compose.ui.graphics.Color
 val BrandRed = Color(0xFFDB2638)
 val PureWhite = Color(0xFFFFFFFF)
 val RealBlack = Color(0xFF000000) // Pure black canvas and primary surfaces
-val CardDarkGray = Color(0xFF272727) // Minimalist surface card gray
-val CardLightGray = Color(0xFFF2F2F2) // M3 Lavender gray container
+val CardDarkGray = Color(0xFF272727)
+val CardLightGray = Color(0xFFF2F2F2)
 
-// Minimalist Utility Theme Color Palette
+// Theme text, outlines, and supporting surfaces.
 val MinimalLightBg = Color(0xFFFFFFFF)
 val MinimalLightText = Color(0xFF0F0F0F)
 val MinimalLightOutline = Color(0xFFE5E5E5)

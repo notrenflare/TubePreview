@@ -1,5 +1,23 @@
 # Security review
 
+## UI and branding follow-up, 2026-10-09
+
+The current UI and artwork refresh adds bundled Streamline Plump vector icons and
+Nunito fonts with attribution and license notices. The preview feed retains standard
+sans-serif typography, full-width thumbnails, and familiar Material navigation icons.
+It introduces no new permissions, network services, or credential use. All 34 local
+unit tests, debug/release builds, and both lint variants pass. A fresh OSV check at
+2026-10-08T21:33:04Z found no known advisories among 320 resolved Maven package/version
+pairs. History-secret and independent build checks run in the private repository's
+GitHub Actions workflow.
+
+The distributed APK is externally signed with the existing renflare certificate;
+its checksum and public signing fingerprint accompany the public 1.0 release.
+Phone updates retain the application identity and local data. Google Play Protect's
+new-developer warning is a separate review issue and is not claimed as resolved.
+
+The dated original review below records the earlier publication preparation.
+
 Review date: 2026-10-08. Scope: the local TubePreview Android application, its assets,
 resolved app/test/build-tool dependencies, publication contents, and release APK.
 The initial review preceded Git initialization. The local repository is now initialized
@@ -183,7 +201,8 @@ secret scanning as unavailable for this repository; neither is claimed as enable
 The CI Gitleaks history scan remains configured. Private vulnerability reporting applies
 to public repositories; this private repository uses the reporting route in SECURITY.md.
 
-The release APK produced locally is unsigned because no release keystore is present.
-Configure external signing environment variables before distributing a release.
+Gradle produces an unsigned release APK. The distribution signing step uses external
+signing material through the signing helper; keystores and private keys are excluded
+from Git. Only the signed, verified APK is distributed.
 Android Studio sync is still failing as it was before the audit; command-line Gradle
 builds, unit tests, and lint all succeed. No device-required instrumentation tests were run.

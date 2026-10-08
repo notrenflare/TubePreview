@@ -10,11 +10,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowForward
-import androidx.compose.material.icons.rounded.AddPhotoAlternate
-import androidx.compose.material.icons.outlined.DarkMode
-import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -35,6 +30,9 @@ import coil.compose.AsyncImage
 import com.renflare.tubepreview.R
 import com.renflare.tubepreview.data.CreatorSettings
 import com.renflare.tubepreview.ui.components.BrandLogo
+import com.renflare.tubepreview.ui.components.PlumpIcons
+import com.renflare.tubepreview.ui.components.PlumpIconButton
+import com.renflare.tubepreview.ui.components.PlumpButton
 import com.renflare.tubepreview.ui.components.GlassTextField
 import com.renflare.tubepreview.ui.components.glassBorder
 import com.renflare.tubepreview.ui.components.glassBorderStroke
@@ -106,26 +104,16 @@ fun OnboardingScreen(
                             color = MaterialTheme.colorScheme.onBackground,
                             modifier = Modifier.weight(1f)
                         )
-                        IconButton(
+                        PlumpIconButton(
+                            icon = if (settings.isDarkMode) PlumpIcons.Sun else PlumpIcons.Moon,
+                            contentDescription = if (settings.isDarkMode) "Switch to light mode" else "Switch to dark mode",
                             onClick = { onToggleTheme(!settings.isDarkMode) },
-                            modifier = Modifier
-                                .size(48.dp)
-                                .testTag("onboarding_theme_toggle")
-                        ) {
-                            Icon(
-                                imageVector = if (settings.isDarkMode) Icons.Outlined.LightMode else Icons.Outlined.DarkMode,
-                                contentDescription = if (settings.isDarkMode) "Switch to light mode" else "Switch to dark mode",
-                                tint = MaterialTheme.colorScheme.onBackground,
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
+                            modifier = Modifier.testTag("onboarding_theme_toggle")
+                        )
                     }
                     Text(
                         text = "Preview before\nyou publish.",
-                        fontSize = 32.sp,
-                        lineHeight = 38.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = (-0.5).sp,
+                        style = MaterialTheme.typography.headlineLarge,
                         color = MaterialTheme.colorScheme.onBackground
                     )
                     Text(
@@ -136,7 +124,7 @@ fun OnboardingScreen(
                 }
 
                 Card(
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(28.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.32f)
                     ),
@@ -144,7 +132,7 @@ fun OnboardingScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
-                        modifier = Modifier.padding(16.dp),
+                        modifier = Modifier.padding(20.dp),
                         verticalArrangement = Arrangement.spacedBy(20.dp)
                     ) {
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -163,7 +151,7 @@ fun OnboardingScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
+                                .clip(RoundedCornerShape(20.dp))
                                 .clickable(
                                     role = Role.Button,
                                     onClickLabel = if (profileImage.isEmpty()) "Add channel photo" else "Change channel photo",
@@ -176,7 +164,7 @@ fun OnboardingScreen(
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(64.dp)
+                                    .size(72.dp)
                                     .clip(CircleShape)
                                     .background(MaterialTheme.colorScheme.primaryContainer)
                                     .glassBorder(CircleShape),
@@ -215,7 +203,7 @@ fun OnboardingScreen(
                                 )
                             }
                             Icon(
-                                imageVector = Icons.Rounded.AddPhotoAlternate,
+                                imageVector = PlumpIcons.Gallery,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(24.dp)
@@ -234,41 +222,16 @@ fun OnboardingScreen(
                         )
                     }
                 }
-
-                val canContinue = channelNameInput.trim().isNotEmpty()
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = 52.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(
-                            if (canContinue) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
-                        )
-                        .clickable(enabled = canContinue, role = Role.Button) {
-                            onSaveProfile(channelNameInput.trim(), selectedProfileUri)
-                            onNavigateNext()
-                        }
-                        .testTag("onboarding_save_button")
-                        .padding(horizontal = 20.dp, vertical = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    val contentColor = if (canContinue) Color.White
-                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                    Text(
-                        text = "Start previewing",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = contentColor,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
-                        contentDescription = null,
-                        tint = contentColor,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+                PlumpButton(
+                    text = "Start previewing",
+                    onClick = {
+                        onSaveProfile(channelNameInput.trim(), selectedProfileUri)
+                        onNavigateNext()
+                    },
+                    icon = PlumpIcons.Forward,
+                    enabled = channelNameInput.trim().isNotEmpty(),
+                    modifier = Modifier.fillMaxWidth().testTag("onboarding_save_button")
+                )
             }
         }
     }

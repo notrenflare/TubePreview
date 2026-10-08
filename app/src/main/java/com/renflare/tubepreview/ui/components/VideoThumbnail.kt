@@ -24,7 +24,9 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -37,6 +39,10 @@ import kotlin.math.max
 fun VideoThumbnail(video: FeedVideo, modifier: Modifier = Modifier) {
     var painter by remember(video.previewThumbnailUrl) { mutableStateOf<Painter?>(null) }
     var thumbnailSize by remember { mutableStateOf(IntSize.Zero) }
+    val density = LocalDensity.current
+    // This label represents thumbnail artwork; the accessible video title below
+    // follows the user's text size. Scale the artwork with its image bounds.
+    val labelSize = (thumbnailSize.width / density.density / 13f).coerceIn(20f, 28f) / density.fontScale
     Box(
         modifier.fillMaxWidth().aspectRatio(16f / 9f)
             .onSizeChanged { thumbnailSize = it }
@@ -57,7 +63,8 @@ fun VideoThumbnail(video: FeedVideo, modifier: Modifier = Modifier) {
                 Text(
                     "Tap here to customize your card",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontFamily = FontFamily.SansSerif
                 )
             }
         } else {
@@ -80,9 +87,10 @@ fun VideoThumbnail(video: FeedVideo, modifier: Modifier = Modifier) {
                 Text(
                     text = video.thumbnailLabel,
                     color = Color.White,
-                    fontSize = 28.sp,
-                    lineHeight = 30.sp,
+                    fontSize = labelSize.sp,
+                    lineHeight = (labelSize * 30f / 28f).sp,
                     fontWeight = FontWeight.Black,
+                    fontFamily = FontFamily.SansSerif,
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.align(Alignment.BottomStart).fillMaxWidth(0.78f).padding(16.dp)
@@ -106,7 +114,7 @@ private fun DurationBadge(
     thumbnailSize: IntSize,
     modifier: Modifier = Modifier
 ) {
-    val shape = RoundedCornerShape(5.dp)
+    val shape = RoundedCornerShape(4.dp)
     Box(modifier.clip(shape).testTag("thumbnail_duration")) {
         if (painter != null && thumbnailSize.width > 0) {
             // Reuse the loaded painter to blur only the image region underneath this badge.
@@ -138,7 +146,8 @@ private fun DurationBadge(
             color = Color.White,
             fontSize = 12.sp,
             fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+            fontFamily = FontFamily.SansSerif,
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
         )
     }
 }

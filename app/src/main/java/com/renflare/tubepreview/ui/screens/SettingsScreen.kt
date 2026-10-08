@@ -11,11 +11,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.*
@@ -30,6 +25,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -43,6 +39,11 @@ import com.renflare.tubepreview.ui.theme.BrandRed
 import com.renflare.tubepreview.ui.components.glassBorder
 import com.renflare.tubepreview.ui.components.glassBorderStroke
 import com.renflare.tubepreview.ui.components.GlassTextField
+import com.renflare.tubepreview.ui.components.PlumpIcons
+import com.renflare.tubepreview.ui.components.PlumpIconButton
+import com.renflare.tubepreview.ui.components.bouncyClickable
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.semantics.Role
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,6 +65,17 @@ fun SettingsScreen(
 ) {
     val scrollState = rememberScrollState()
     val context = LocalContext.current
+    val uriHandler = LocalUriHandler.current
+    var showFontLicense by remember { mutableStateOf(false) }
+    if (showFontLicense) {
+        val license = remember { context.assets.open("licenses/nunito.txt").bufferedReader().use { it.readText() } }
+        AlertDialog(
+            onDismissRequest = { showFontLicense = false },
+            title = { Text("Nunito font license") },
+            text = { Text(license, modifier = Modifier.verticalScroll(rememberScrollState())) },
+            confirmButton = { TextButton(onClick = { showFontLicense = false }) { Text("Done") } }
+        )
+    }
     val focusManager = LocalFocusManager.current
     var showResetConfirmation by rememberSaveable { mutableStateOf(false) }
 
@@ -114,28 +126,21 @@ fun SettingsScreen(
                     .background(MaterialTheme.colorScheme.background)
                     .statusBarsPadding()
                     .fillMaxWidth()
-                    .heightIn(min = 56.dp)
-                    .padding(horizontal = 4.dp),
+                    .heightIn(min = 72.dp)
+                    .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(
+                PlumpIconButton(
+                    icon = PlumpIcons.Back,
+                    contentDescription = "Return to home feed list screen",
                     onClick = onNavigateBack,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .testTag("settings_back_button")
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                        contentDescription = "Return to home feed list screen",
-                        tint = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
+                    modifier = Modifier.testTag("settings_back_button")
+                )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = "Customize your preview",
+                    text = "Make it yours",
                     fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
+                    fontSize = 22.sp,
                     color = MaterialTheme.colorScheme.onBackground
                 )
             }
@@ -148,20 +153,20 @@ fun SettingsScreen(
                 .consumeWindowInsets(innerPadding)
                 .background(MaterialTheme.colorScheme.background)
                 .verticalScroll(scrollState)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
 
             // Section 1: Channel Branding Settings
-            SectionHeader(icon = Icons.Default.AccountCircle, title = "Channel")
+            SectionHeader(icon = PlumpIcons.UserSolid, title = "Channel")
             Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.32f)),
+                shape = RoundedCornerShape(28.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)),
                 border = glassBorderStroke(),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(20.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     // Profile picture avatar edit row
@@ -194,7 +199,7 @@ fun SettingsScreen(
                                 )
                             } else {
                                 Icon(
-                                    imageVector = Icons.Default.PhotoCamera,
+                                    imageVector = PlumpIcons.Camera,
                                     contentDescription = "Pick photo icon",
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.size(24.dp)
@@ -218,7 +223,7 @@ fun SettingsScreen(
                                     contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                                 ),
                                 border = glassBorderStroke(),
-                                shape = RoundedCornerShape(12.dp),
+                                shape = RoundedCornerShape(20.dp),
                                 contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
                                 modifier = Modifier
                                     .heightIn(min = 48.dp)
@@ -229,7 +234,7 @@ fun SettingsScreen(
                                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Default.AddPhotoAlternate,
+                                        imageVector = PlumpIcons.Gallery,
                                         contentDescription = null,
                                         modifier = Modifier.size(16.dp),
                                         tint = MaterialTheme.colorScheme.primary
@@ -259,22 +264,22 @@ fun SettingsScreen(
                         },
                         label = "Channel name",
                         singleLine = true,
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(20.dp),
                         modifier = Modifier.fillMaxWidth().testTag("settings_channel_name_input")
                     )
                 }
             }
 
             // Section 2: Custom Preview Videocard details
-            SectionHeader(icon = Icons.Default.SmartDisplay, title = "Video")
+            SectionHeader(icon = PlumpIcons.PlaySolid, title = "Video")
             Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.32f)),
+                shape = RoundedCornerShape(28.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)),
                 border = glassBorderStroke(),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(20.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
 
@@ -284,7 +289,7 @@ fun SettingsScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .aspectRatio(16f / 9f)
-                                .clip(RoundedCornerShape(12.dp))
+                                .clip(RoundedCornerShape(20.dp))
                                 .background(MaterialTheme.colorScheme.background)
                                 .glassBorder()
                                 .clickable {
@@ -312,7 +317,7 @@ fun SettingsScreen(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Default.Edit,
+                                        imageVector = PlumpIcons.Edit,
                                         contentDescription = "Change Image overlay",
                                         tint = Color.White,
                                         modifier = Modifier.size(32.dp)
@@ -321,7 +326,7 @@ fun SettingsScreen(
                             } else {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Icon(
-                                        imageVector = Icons.Default.InsertPhoto,
+                                        imageVector = PlumpIcons.Gallery,
                                         contentDescription = "Pick thumbnail icon",
                                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                                         modifier = Modifier.size(36.dp)
@@ -353,7 +358,7 @@ fun SettingsScreen(
                             onUpdatePreviewTitle(it)
                         },
                         label = "Title",
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(20.dp),
                         modifier = Modifier.fillMaxWidth().testTag("settings_title_input"),
                         maxLines = 3
                     )
@@ -369,7 +374,7 @@ fun SettingsScreen(
                                 onUpdatePreviewViews(it)
                             },
                             label = "Views",
-                            shape = RoundedCornerShape(12.dp),
+                            shape = RoundedCornerShape(20.dp),
                             modifier = Modifier.fillMaxWidth().testTag("settings_views_input"),
                             singleLine = true
                         )
@@ -381,7 +386,7 @@ fun SettingsScreen(
                                 onUpdatePreviewDuration(it)
                             },
                             label = "Duration",
-                            shape = RoundedCornerShape(12.dp),
+                            shape = RoundedCornerShape(20.dp),
                             modifier = Modifier.fillMaxWidth().testTag("settings_duration_input"),
                             singleLine = true
                         )
@@ -390,15 +395,15 @@ fun SettingsScreen(
             }
 
             // Section 3: Feed Configuration
-            SectionHeader(icon = Icons.Default.DynamicFeed, title = "Feed")
+            SectionHeader(icon = PlumpIcons.Feed, title = "Feed")
             Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.32f)),
+                shape = RoundedCornerShape(28.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)),
                 border = glassBorderStroke(),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(20.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
 
@@ -421,15 +426,17 @@ fun SettingsScreen(
                                 Box(
                                     modifier = Modifier
                                         .weight(1f)
-                                        .clip(RoundedCornerShape(8.dp))
+                                        .clip(CircleShape)
                                         .background(if (isSelected) BrandRed else MaterialTheme.colorScheme.surface)
                                         .border(
                                             width = 1.dp,
                                             color = if (isSelected) BrandRed else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
-                                            shape = RoundedCornerShape(8.dp)
+                                            shape = CircleShape
                                         )
-                                        .clickable { onUpdateFeedSize(limit) }
-                                        .padding(vertical = 10.dp)
+                                        .heightIn(min = 48.dp)
+                                        .bouncyClickable(role = Role.RadioButton) { onUpdateFeedSize(limit) }
+                                        .semantics { selected = isSelected; contentDescription = "$limit surrounding videos" }
+                                        .padding(vertical = 12.dp)
                                         .testTag("feed_size_capsule_$limit"),
                                     contentAlignment = Alignment.Center
                                 ) {
@@ -463,23 +470,23 @@ fun SettingsScreen(
                         ) {
                             IconButton(
                                 onClick = { onUpdatePreviewInterval((settings.previewInterval - 1).coerceAtLeast(2)) },
-                                modifier = Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.65f), CircleShape).glassBorder(CircleShape).size(48.dp).testTag("interval_decrease")
+                                modifier = Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.65f), CircleShape).glassBorder(CircleShape).size(48.dp).semantics { contentDescription = "Decrease preview interval" }.testTag("interval_decrease")
                             ) {
-                                Icon(Icons.Default.Remove, "Decrease interval value", modifier = Modifier.size(16.dp))
+                                Text("−", fontSize = 24.sp, fontWeight = FontWeight.Bold)
                             }
 
                             Text(
                                 text = "${settings.previewInterval} videos",
                                 fontSize = 16.sp,
-                                fontWeight = FontWeight.Black,
+                                fontWeight = FontWeight.ExtraBold,
                                 modifier = Modifier.testTag("interval_text_display")
                             )
 
                             IconButton(
                                 onClick = { onUpdatePreviewInterval((settings.previewInterval + 1).coerceAtMost(10)) },
-                                modifier = Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.65f), CircleShape).glassBorder(CircleShape).size(48.dp).testTag("interval_increase")
+                                modifier = Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.65f), CircleShape).glassBorder(CircleShape).size(48.dp).semantics { contentDescription = "Increase preview interval" }.testTag("interval_increase")
                             ) {
-                                Icon(Icons.Default.Add, "Increase interval value", modifier = Modifier.size(16.dp))
+                                Text("+", fontSize = 24.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -497,7 +504,7 @@ fun SettingsScreen(
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             Icon(
-                                imageVector = if (settings.isDarkMode) Icons.Default.DarkMode else Icons.Default.LightMode,
+                                imageVector = if (settings.isDarkMode) PlumpIcons.Moon else PlumpIcons.Sun,
                                 contentDescription = "Active color icon"
                             )
                             Column(Modifier.weight(1f)) {
@@ -524,15 +531,15 @@ fun SettingsScreen(
             }
 
             // Section 4: General Template Overrides
-            SectionHeader(icon = Icons.Default.AutoAwesome, title = "Surrounding video overrides")
+            SectionHeader(icon = PlumpIcons.Stars, title = "Surrounding video overrides")
             Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.32f)),
+                shape = RoundedCornerShape(28.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)),
                 border = glassBorderStroke(),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(20.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Text(
@@ -550,7 +557,7 @@ fun SettingsScreen(
                         },
                         label = "Title",
                         placeholder = { Text("e.g. Recommended Video") },
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(20.dp),
                         modifier = Modifier.fillMaxWidth().testTag("placeholder_title_input")
                     )
 
@@ -566,7 +573,7 @@ fun SettingsScreen(
                             },
                             label = "Views",
                             placeholder = { Text("e.g. 100K views") },
-                            shape = RoundedCornerShape(12.dp),
+                            shape = RoundedCornerShape(20.dp),
                             modifier = Modifier.fillMaxWidth().testTag("placeholder_views_input"),
                             singleLine = true
                         )
@@ -579,7 +586,7 @@ fun SettingsScreen(
                             },
                             label = "Duration",
                             placeholder = { Text("e.g. 10:00") },
-                            shape = RoundedCornerShape(12.dp),
+                            shape = RoundedCornerShape(20.dp),
                             modifier = Modifier.fillMaxWidth().testTag("placeholder_time_input"),
                             singleLine = true
                         )
@@ -588,15 +595,15 @@ fun SettingsScreen(
             }
 
             // Section 5: Reset Operations / System panel
-            SectionHeader(icon = Icons.Default.Warning, title = "Reset preview")
+            SectionHeader(icon = PlumpIcons.Warning, title = "Reset preview")
             Card(
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(28.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.15f)),
                 border = glassBorderStroke(),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(20.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -613,7 +620,7 @@ fun SettingsScreen(
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.error
                         ),
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(20.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .heightIn(min = 48.dp)
@@ -623,7 +630,7 @@ fun SettingsScreen(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(Icons.Default.DeleteForever, "Trash icon")
+                            Icon(PlumpIcons.Reset, "Trash icon")
                             Text("Reset to defaults", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                         }
                     }
@@ -657,6 +664,12 @@ fun SettingsScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
+                TextButton(onClick = { uriHandler.openUri("https://streamlinehq.com") }) {
+                    Text("Free icons from Streamline", style = MaterialTheme.typography.bodySmall)
+                }
+                TextButton(onClick = { showFontLicense = true }) {
+                    Text("Nunito font · Open Font License", style = MaterialTheme.typography.bodySmall)
+                }
             }
         }
     }
@@ -666,20 +679,16 @@ fun SettingsScreen(
 fun SectionHeader(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = BrandRed,
-            modifier = Modifier.size(20.dp)
-        )
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onBackground
-        )
+        Box(
+            Modifier.size(44.dp).clip(CircleShape).background(BrandRed.copy(alpha = 0.10f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(icon, null, tint = BrandRed, modifier = Modifier.size(24.dp))
+        }
+        Text(title, style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onBackground)
     }
 }

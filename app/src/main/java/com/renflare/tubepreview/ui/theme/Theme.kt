@@ -2,6 +2,9 @@ package com.renflare.tubepreview.ui.theme
 
 import android.os.Build
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.unit.dp
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -66,6 +69,9 @@ fun TubePreviewTheme(
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                view.isForceDarkAllowed = false
+            }
             val window = (view.context as? Activity)?.window
             if (window != null) {
                 WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
@@ -77,6 +83,13 @@ fun TubePreviewTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
+        shapes = Shapes(
+            extraSmall = RoundedCornerShape(12.dp),
+            small = RoundedCornerShape(20.dp),
+            medium = RoundedCornerShape(24.dp),
+            large = RoundedCornerShape(28.dp),
+            extraLarge = RoundedCornerShape(32.dp)
+        ),
         content = content
     )
 }

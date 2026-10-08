@@ -57,4 +57,8 @@ Built with Kotlin and Jetpack Compose. See [CONTRIBUTING.md](CONTRIBUTING.md)
 for setup, validation, and release signing. Build and security results are available
 in [GitHub Actions](https://github.com/notrenflare/TubePreview/actions).
 
+Icons: [Streamline](https://streamlinehq.com) and [Material Icons](https://fonts.google.com/icons).
+Setup typography: [Nunito](https://fonts.google.com/specimen/Nunito).
+See [third-party notices](THIRD_PARTY_NOTICES.md) for asset licenses.
+
 Made with ❤️ by [**renflare**](https://github.com/notrenflare).

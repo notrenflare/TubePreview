@@ -17,7 +17,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -29,7 +28,7 @@ fun GlassTextField(
     onValueChange: (String) -> Unit,
     label: String,
     modifier: Modifier = Modifier,
-    shape: Shape = RoundedCornerShape(12.dp),
+    shape: Shape = RoundedCornerShape(20.dp),
     placeholder: (@Composable () -> Unit)? = null,
     singleLine: Boolean = false,
     maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE
@@ -42,7 +41,7 @@ fun GlassTextField(
         if (!isEditing) draft = value
     }
 
-    // Keep the label outside the glass outline so the highlight never crosses the text.
+    // External labels remain clear when the field is focused.
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         OutlinedTextField(
@@ -56,12 +55,13 @@ fun GlassTextField(
             maxLines = maxLines,
             shape = shape,
             colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = Color.Transparent,
+                unfocusedContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.55f),
+                focusedContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.55f),
+                unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.10f),
                 focusedBorderColor = MaterialTheme.colorScheme.primary
             ),
             modifier = modifier
                 .onFocusChanged { isEditing = it.isFocused }
-                .glassBorder(shape)
                 .semantics { contentDescription = label }
         )
     }

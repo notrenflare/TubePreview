@@ -5,7 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -80,6 +81,7 @@ fun VideoCard(
                         color = MaterialTheme.colorScheme.onBackground,
                         fontWeight = FontWeight.Medium,
                         fontSize = 16.sp,
+                        fontFamily = FontFamily.SansSerif,
                         maxLines = 2,
                         minLines = 1,
                         lineHeight = 22.sp,
@@ -93,6 +95,7 @@ fun VideoCard(
                             .filter { it.isNotBlank() }.joinToString(" · "),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodyMedium,
+                        fontFamily = FontFamily.SansSerif,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -104,7 +107,7 @@ fun VideoCard(
                     modifier = Modifier.size(48.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.MoreVert,
+                        imageVector = Icons.Outlined.MoreVert,
                         contentDescription = "Options menu",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(24.dp)

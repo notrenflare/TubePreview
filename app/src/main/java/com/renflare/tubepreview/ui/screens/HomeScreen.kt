@@ -11,10 +11,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.rounded.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -31,6 +27,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
@@ -38,6 +35,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.renflare.tubepreview.ui.components.BrandLogo
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import com.renflare.tubepreview.ui.components.rememberFeedBackdrop
 import com.renflare.tubepreview.ui.components.feedBackdropSource
 import com.renflare.tubepreview.ui.components.feedBackdropGlass
@@ -152,108 +158,101 @@ fun HomeScreen(
                     .testTag("home_top_bar")
                     .background(MaterialTheme.colorScheme.background)
             ) {
-                Row(
-                    modifier = Modifier
-                        .statusBarsPadding()
-                        .fillMaxWidth()
-                        .height(56.dp)
-                        .padding(start = 16.dp, end = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                BoxWithConstraints(Modifier.statusBarsPadding().fillMaxWidth()) {
+                    val compactHeader = maxWidth < 380.dp || LocalDensity.current.fontScale > 1.15f
+                    var menuExpanded by remember { mutableStateOf(false) }
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)
+                            .padding(start = 16.dp, end = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        BrandLogo(
-                            modifier = Modifier.size(36.dp)
-                        )
-                        Spacer(Modifier.width(7.dp))
-                        Text(
-                            text = "TubePreview",
-                            fontSize = 24.sp,
-                            fontFamily = androidx.compose.ui.text.font.FontFamily.SansSerif,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = (-1).sp,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                    }
-                    IconButton(
-                        onClick = { onToggleTheme(!settings.isDarkMode) },
-                        modifier = Modifier.size(48.dp).testTag("home_theme_toggle")
-                    ) {
-                        Icon(
-                            imageVector = if (settings.isDarkMode) Icons.Outlined.LightMode else Icons.Outlined.DarkMode,
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            BrandLogo(
+                                modifier = Modifier.size(32.dp)
+                            )
+                            Spacer(Modifier.width(7.dp))
+                            Text(
+                                text = "TubePreview",
+                                fontSize = 22.sp,
+                                fontFamily = FontFamily.SansSerif,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = (-0.5).sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                        }
+                        FeedIconButton(
+                            icon = if (settings.isDarkMode) Icons.Outlined.LightMode else Icons.Outlined.DarkMode,
                             contentDescription = "Toggle theme",
-                            modifier = Modifier.size(26.dp)
+                            onClick = { onToggleTheme(!settings.isDarkMode) },
+                            modifier = Modifier.testTag("home_theme_toggle")
                         )
-                    }
-                    IconButton(
-                        onClick = { scope.launch { snackbarHostState.showSnackbar("No notifications yet") } },
-                        modifier = Modifier.size(48.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.NotificationsNone,
-                            contentDescription = "Notifications",
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
-                    IconButton(
-                        onClick = { scope.launch { snackbarHostState.showSnackbar("Search is not available in the preview feed") } },
-                        modifier = Modifier.size(48.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Search,
-                            contentDescription = "Search videos",
-                            modifier = Modifier.size(28.dp)
-                        )
+                        Spacer(Modifier.width(6.dp))
+                        if (compactHeader) {
+                            Box {
+                                FeedIconButton(
+                                    icon = Icons.Outlined.MoreVert,
+                                    contentDescription = "More feed options",
+                                    onClick = { menuExpanded = true }
+                                )
+                                DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
+                                    DropdownMenuItem(
+                                        text = { Text("Notifications") },
+                                        leadingIcon = { Icon(Icons.Outlined.NotificationsNone, null) },
+                                        onClick = {
+                                            menuExpanded = false
+                                            scope.launch { snackbarHostState.showSnackbar("No notifications yet") }
+                                        }
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text("Search videos") },
+                                        leadingIcon = { Icon(Icons.Outlined.Search, null) },
+                                        onClick = {
+                                            menuExpanded = false
+                                            scope.launch { snackbarHostState.showSnackbar("Search is not available in the preview feed") }
+                                        }
+                                    )
+                                }
+                            }
+                        } else {
+                            FeedIconButton(
+                                icon = Icons.Outlined.NotificationsNone,
+                                contentDescription = "Notifications",
+                                onClick = { scope.launch { snackbarHostState.showSnackbar("No notifications yet") } }
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            FeedIconButton(
+                                icon = Icons.Outlined.Search,
+                                contentDescription = "Search videos",
+                                onClick = { scope.launch { snackbarHostState.showSnackbar("Search is not available in the preview feed") } }
+                            )
+                        }
                     }
                 }
 
-                // Horizontal Category selection chips
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     item(key = "explore") {
-                        val isSelected = selectedCategory == "Explore"
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(if (isSelected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.surfaceVariant)
-                                .clickable { selectedCategory = "Explore" }
-                                .padding(horizontal = 10.dp, vertical = 6.dp)
-                                .testTag("home_explore_tab"),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                Icons.Outlined.Explore, contentDescription = "Explore",
-                                tint = if (isSelected) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
+                        FeedCategoryChip(
+                            selected = selectedCategory == "Explore",
+                            onClick = { selectedCategory = "Explore" },
+                            modifier = Modifier.testTag("home_explore_tab"),
+                            icon = Icons.Outlined.Explore
+                        )
                     }
                     items(categories) { category ->
-                        val isSelected = selectedCategory == category
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(
-                                    if (isSelected) MaterialTheme.colorScheme.onBackground
-                                    else MaterialTheme.colorScheme.surfaceVariant
-                                )
-                                .clickable { selectedCategory = category }
-                                .padding(horizontal = 12.dp, vertical = 6.dp)
-                        ) {
-                            Text(
-                                text = category,
-                                color = if (isSelected) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onSurface,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
+                        FeedCategoryChip(
+                            selected = selectedCategory == category,
+                            onClick = { selectedCategory = category },
+                            text = category
+                        )
                     }
                 }
                 Spacer(modifier = Modifier.height(4.dp))
@@ -265,18 +264,20 @@ fun HomeScreen(
                     .onSizeChanged { bottomBarHeightPx = it.height.toFloat() }
                     .offset { IntOffset(x = 0, y = if (isRefreshing || pullToRefreshState.distanceFraction > 0f) 0 else animatedBottomOffset.roundToInt()) }
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                    .windowInsetsPadding(WindowInsets.navigationBars)
+                    .padding(horizontal = 8.dp, vertical = 6.dp)
+                    .clip(RoundedCornerShape(20.dp))
                     .feedBackdropGlass(feedBackdrop, MaterialTheme.colorScheme.background)
                     .border(
                         0.5.dp,
                         MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
-                        RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+                        RoundedCornerShape(20.dp)
                     )
-                    .windowInsetsPadding(WindowInsets.navigationBars)
+                    .padding(horizontal = 4.dp, vertical = 6.dp)
                     .testTag("home_glass_bottom_bar")
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().height(64.dp),
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
                     horizontalArrangement = Arrangement.SpaceAround,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -295,8 +296,8 @@ fun HomeScreen(
                                 .weight(1f)
                                 .fillMaxHeight()
                                 .padding(vertical = 4.dp)
-                                .clip(RoundedCornerShape(16.dp))
-                                .clickable {
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable(role = Role.Tab) {
                                     when {
                                         isYou || isCreate -> onNavigateToSettings()
                                         title != "Home" -> scope.launch {
@@ -304,17 +305,18 @@ fun HomeScreen(
                                         }
                                     }
                                 }
+                                .semantics { selected = title == "Home" }
                                 .then(if (isYou) Modifier.testTag("home_settings_button") else Modifier),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
                         ) {
                             if (isCreate) {
                                 Box(
-                                    modifier = Modifier.size(42.dp)
-                                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.10f), CircleShape),
+                                    modifier = Modifier.size(36.dp)
+                                        .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Icon(icon, "Edit your preview", modifier = Modifier.size(30.dp))
+                                    Icon(icon, "Edit your preview", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(24.dp))
                                 }
                             } else {
                                 if (isYou && settings.profilePictureUri.isNotEmpty()) {
@@ -322,20 +324,22 @@ fun HomeScreen(
                                         model = settings.profilePictureUri,
                                         contentDescription = "Your profile",
                                         contentScale = ContentScale.Crop,
-                                        modifier = Modifier.size(28.dp).clip(CircleShape)
+                                        modifier = Modifier.size(24.dp).clip(CircleShape)
                                     )
                                 } else {
                                     Icon(
                                         icon,
                                         contentDescription = null,
                                         tint = MaterialTheme.colorScheme.onBackground,
-                                        modifier = Modifier.size(28.dp)
+                                        modifier = Modifier.size(24.dp)
                                     )
                                 }
                                 Spacer(Modifier.height(3.dp))
                                 Text(
-                                    text = title,
+                                    text = if (title == "Subscriptions" && LocalDensity.current.fontScale > 1.15f) "Subs" else title,
+                                    modifier = Modifier.semantics { if (title == "Subscriptions") contentDescription = title },
                                     color = MaterialTheme.colorScheme.onBackground,
+                                    fontFamily = FontFamily.SansSerif,
                                     fontSize = 10.sp,
                                     lineHeight = 12.sp,
                                     fontWeight = if (title == "Home") FontWeight.Medium else FontWeight.Normal,
@@ -421,7 +425,7 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(12.dp))
                     }
 
-                    // 2. Beautiful Redesigned 2x2 Shorts grid shelf!
+                    // Two-column Shorts shelf.
                     item {
                         ShortsShelfView(
                             onShortClick = { shortTitle ->
@@ -468,6 +472,51 @@ fun HomeScreen(
 }
 
 @Composable
+private fun FeedCategoryChip(
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    text: String? = null,
+    icon: ImageVector? = null
+) {
+    val colors = MaterialTheme.colorScheme
+    Box(
+        modifier.heightIn(min = 48.dp).clip(RoundedCornerShape(8.dp))
+            .clickable(role = Role.Tab, onClick = onClick)
+            .semantics { this.selected = selected },
+        contentAlignment = Alignment.Center
+    ) {
+        Box(
+            Modifier.clip(RoundedCornerShape(8.dp))
+                .background(if (selected) colors.onSurface else colors.surfaceVariant)
+                .padding(horizontal = 12.dp, vertical = 7.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            if (icon != null) {
+                Icon(icon, "Explore", tint = if (selected) colors.surface else colors.onSurface,
+                    modifier = Modifier.size(18.dp))
+            } else {
+                Text(text.orEmpty(), color = if (selected) colors.surface else colors.onSurface,
+                    fontFamily = FontFamily.SansSerif, fontSize = 14.sp, lineHeight = 18.sp,
+                    fontWeight = FontWeight.Medium)
+            }
+        }
+    }
+}
+
+@Composable
+private fun FeedIconButton(
+    icon: ImageVector,
+    contentDescription: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    IconButton(onClick = onClick, modifier = modifier.size(48.dp)) {
+        Icon(icon, contentDescription, modifier = Modifier.size(24.dp))
+    }
+}
+
+@Composable
 fun ShortsShelfView(
     onShortClick: (String) -> Unit,
     modifier: Modifier = Modifier
@@ -489,7 +538,7 @@ fun ShortsShelfView(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Default.PlayArrow,
+                    imageVector = Icons.Outlined.PlayArrow,
                     contentDescription = null,
                     tint = Color.White,
                     modifier = Modifier.size(12.dp).offset(x = 0.5.dp)
@@ -498,7 +547,8 @@ fun ShortsShelfView(
             Spacer(modifier = Modifier.width(6.dp))
             Text(
                 text = "Shorts",
-                fontSize = 17.sp,
+                fontSize = 20.sp,
+                fontFamily = FontFamily.SansSerif,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
             )
@@ -545,7 +595,7 @@ fun ShortCardItem(
     var imageLoaded by remember(gradientIndex) { mutableStateOf(false) }
 
     Card(
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(12.dp),
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(9f / 16f)
@@ -590,6 +640,7 @@ fun ShortCardItem(
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp,
+                    fontFamily = FontFamily.SansSerif,
                     maxLines = 2,
                     lineHeight = 18.sp,
                     overflow = TextOverflow.Ellipsis
@@ -599,6 +650,7 @@ fun ShortCardItem(
                     text = views,
                     color = Color.White.copy(alpha = 0.8f),
                     fontSize = 12.sp,
+                    fontFamily = FontFamily.SansSerif,
                     fontWeight = FontWeight.Normal
                 )
             }
@@ -613,7 +665,7 @@ fun ShortCardItem(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        imageVector = Icons.Default.PlayArrow,
+                        imageVector = Icons.Outlined.PlayArrow,
                         contentDescription = null,
                         tint = BrandRed,
                         modifier = Modifier.size(8.dp)
