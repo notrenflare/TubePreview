@@ -24,8 +24,17 @@ were renamed.
 
 **Before publishing, revoke the retired API key in Google Cloud.**
 The old .env key was embedded in generated debug/release BuildConfig and lint models.
-Deleting the key and rebuilding removes local copies from those outputs; it cannot revoke
-the credential or invalidate any earlier APKs. Key validity and prior use were not tested.
+Removing the key from the project and rebuilding removes local copies from those outputs;
+it cannot revoke the credential or invalidate any earlier APKs. Key validity and prior use
+were not tested.
+
+The retired credential was present in TubePreview, but its owning Google Cloud project
+has not been established. The initial scan intentionally redacted its value, and the
+review archives contain no recoverable value for an exact comparison. The original app
+package is no longer installed on the connected test device. The currently signed-in
+Google account has a Gemini project and key, but their relationship to the retired
+credential is unconfirmed. No Google Cloud key has been changed or revoked during this
+investigation. The current app does not use a Gemini API key.
 
 ## Security alignment areas, priority, and implementation
 
