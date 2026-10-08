@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:width="108dp" android:height="108dp">
-        <shape><solid android:color="@android:color/transparent" /></shape>
-    </item>
-    <item android:width="68dp" android:height="68dp" android:gravity="center">
-        <bitmap android:src="@drawable/launcher_artwork" android:gravity="fill" android:filter="true" />
-    </item>
-</layer-list>
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:insetLeft="18.52%"
+    android:insetTop="18.52%"
+    android:insetRight="18.52%"
+    android:insetBottom="18.52%">
+    <bitmap android:src="@drawable/launcher_artwork" android:gravity="fill" android:filter="true" />
+</inset>
