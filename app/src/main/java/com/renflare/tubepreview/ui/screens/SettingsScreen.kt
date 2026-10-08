@@ -26,6 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -63,6 +64,7 @@ fun SettingsScreen(
 ) {
     val scrollState = rememberScrollState()
     val context = LocalContext.current
+    val focusManager = LocalFocusManager.current
     var showResetConfirmation by rememberSaveable { mutableStateOf(false) }
 
     if (showResetConfirmation) {
@@ -72,6 +74,7 @@ fun SettingsScreen(
             text = { Text("Your uploaded images and custom preview settings will be removed.") },
             confirmButton = {
                 TextButton(onClick = {
+                    focusManager.clearFocus(force = true)
                     showResetConfirmation = false
                     onResetAll()
                 }) { Text("Reset", color = MaterialTheme.colorScheme.error) }
