@@ -312,7 +312,7 @@ fun HomeScreen(
                             modifier = Modifier
                                 .weight(1f)
                                 .fillMaxHeight()
-                                .padding(4.dp)
+                                .padding(vertical = 4.dp)
                                 .clip(RoundedCornerShape(16.dp))
                                 .clickable {
                                     when {
