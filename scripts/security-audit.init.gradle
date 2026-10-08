@@ -1,0 +1,38 @@
+import groovy.json.JsonOutput
+
+// Opt-in audit task; does not change application compilation or packaging.
+allprojects {
+    plugins.withId("com.android.application") {
+        tasks.register("auditDependencies") {
+            doLast {
+                def packages = []
+                def collect = { configuration, scope ->
+                    configuration.incoming.resolutionResult.allComponents.each { component ->
+                        def id = component.moduleVersion
+                        if (id != null && id.group && id.group != rootProject.name) {
+                            packages.add([name: id.group + ":" + id.name, version: id.version, scope: scope])
+                        }
+                    }
+                }
+                ["debugRuntimeClasspath", "releaseRuntimeClasspath",
+                 "debugUnitTestRuntimeClasspath", "debugAndroidTestRuntimeClasspath"].each { name ->
+                    def configuration = configurations.findByName(name)
+                    if (configuration == null || !configuration.canBeResolved) {
+                        throw new GradleException("Missing audit configuration: " + name)
+                    }
+                    collect(configuration, name)
+                }
+                rootProject.allprojects.each { target ->
+                    def classpath = target.buildscript.configurations.findByName("classpath")
+                    if (classpath != null && classpath.canBeResolved) {
+                        collect(classpath, target.path + ":buildscriptClasspath")
+                    }
+                }
+                def report = new File(rootProject.layout.buildDirectory.get().asFile, "security/dependencies.json")
+                report.parentFile.mkdirs()
+                report.text = JsonOutput.prettyPrint(JsonOutput.toJson(packages.unique()))
+                println("Dependency inventory: " + report)
+            }
+        }
+    }
+}
