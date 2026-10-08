@@ -273,6 +273,7 @@ fun HomeScreen(
                     .onSizeChanged { bottomBarHeightPx = it.height.toFloat() }
                     .offset { IntOffset(x = 0, y = if (isRefreshing || pullToRefreshState.distanceFraction > 0f) 0 else animatedBottomOffset.roundToInt()) }
                     .fillMaxWidth()
+                    .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
                     // A solid backing keeps moving thumbnails from bleeding through the glass.
                     .background(MaterialTheme.colorScheme.background)
                     .background(
@@ -311,6 +312,8 @@ fun HomeScreen(
                             modifier = Modifier
                                 .weight(1f)
                                 .fillMaxHeight()
+                                .padding(4.dp)
+                                .clip(RoundedCornerShape(16.dp))
                                 .clickable {
                                     when {
                                         isYou || isCreate -> onNavigateToSettings()
