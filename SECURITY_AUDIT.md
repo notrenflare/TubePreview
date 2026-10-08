@@ -4,7 +4,9 @@ Review date: 2026-10-08. Scope: the local TubePreview Android application, its a
 resolved app/test/build-tool dependencies, publication contents, and release APK.
 The initial review preceded Git initialization. The local repository is now initialized
 on `main`. GitHub authentication is confirmed for `notrenflare`, with private repository
-visibility selected. Remote publication is pending revocation of the retired API key.
+visibility selected. Private source publication was authorized after documenting that
+revocation of the retired API key remains unverified. The publication set excludes
+the old credential and its generated outputs.
 
 ## Result
 
@@ -22,7 +24,7 @@ app-specific permission. Fresh publication and compiled APK string scans found n
 secrets. One arithmetic template test was removed; the app-resource and splash tests
 were renamed.
 
-**Before publishing, revoke the retired API key in Google Cloud.**
+**Revocation of the retired API key remains unverified.**
 The old .env key was embedded in generated debug/release BuildConfig and lint models.
 Removing the key from the project and rebuilding removes local copies from those outputs;
 it cannot revoke the credential or invalidate any earlier APKs. Key validity and prior use

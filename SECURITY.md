@@ -7,18 +7,26 @@ device transfer. Clearing app data or uninstalling the app removes those local s
 
 ## Reporting a vulnerability
 
-After publishing, enable GitHub private vulnerability reporting under repository
-Settings → Security. Use the repository's Security → Report a vulnerability form.
-Do not disclose keys, private photos, or exploit details in a public issue.
+This repository is private. Collaborators can report a vulnerability in a repository
+issue visible only to authorized collaborators. Avoid including raw credentials or
+private photos. If you do not have repository access, contact the maintainer through
+an existing private channel.
 
-## Before publishing
+If the repository becomes public, enable GitHub private vulnerability reporting and
+use Security → Report a vulnerability. Never publish exploit details in a public issue.
 
-- Revoke the retired API key previously used by this project's removed .env configuration.
+## Repository maintenance
+
+- Revocation of the retired key from the removed .env configuration remains unverified.
   Earlier generated builds contained it; deleting the file does not revoke the key.
+  Its Google Cloud project has not been conclusively identified. The current app and
+  reviewed Git history do not contain that credential; see SECURITY_AUDIT.md.
 - Publish with Git so .gitignore excludes local settings, build output, and signing keys.
   Do not upload a ZIP of the entire workspace.
-- Enable GitHub secret scanning and push protection, Dependabot alerts, and private
-  vulnerability reporting where available. Require the CI checks before merging.
+- Enable Dependabot alerts and repository security features supported by the account
+  and visibility. Private vulnerability reporting applies to public repositories;
+  private secret scanning and enforced branch checks have plan restrictions.
+  Review the CI checks before merging even where enforcement is unavailable.
 - Keep release signing keys outside the repository. KEYSTORE_PATH, STORE_PASSWORD,
   and KEY_PASSWORD are environment variables used only for signing. Builds without a
   keystore produce an unsigned release; never distribute a debug build as a release.

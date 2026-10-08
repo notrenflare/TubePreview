@@ -4,9 +4,11 @@
 
 # TubePreview
 
-Preview your thumbnails in a YouTube-style home feed before you publish.
-TubePreview is a native Android app built with Kotlin and Jetpack Compose.
-No YouTube account or API key is required.
+**Preview before you publish.**
+
+See how your thumbnails, titles, and channel branding look in a YouTube-style
+home feed. Built for Android with Kotlin and Jetpack Compose, with no YouTube
+sign-in or API key required.
 
 ## What you can do
 
@@ -19,11 +21,39 @@ No YouTube account or API key is required.
 TubePreview is an independent preview tool and is not affiliated with YouTube or Google.
 It does not upload videos or modify your YouTube channel.
 
+## Screenshots
+
+<table>
+  <tr>
+    <th>Get started</th>
+    <th>Dark feed</th>
+    <th>Light feed</th>
+    <th>Customize</th>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/onboarding.png" width="210" alt="Fresh onboarding with the TubePreview logo and renflare channel name" /></td>
+    <td><img src="docs/screenshots/home-dark.png" width="210" alt="Default thumbnail preview in a dark home feed" /></td>
+    <td><img src="docs/screenshots/home-light.png" width="210" alt="The same default preview in a light home feed" /></td>
+    <td><img src="docs/screenshots/customize.png" width="210" alt="Channel and video customization with an empty thumbnail picker" /></td>
+  </tr>
+</table>
+
+Captured on a Samsung Galaxy A55 after clearing app data. The feed uses sample
+content; the preview card stays empty until you choose a thumbnail.
+
 ## Build and run
 
 1. Install Android Studio with JDK 21 and Android SDK Platform 37.
-2. Clone this repository and open its root folder in Android Studio.
+2. Clone `notrenflare/TubePreview` while signed in to an account with repository access,
+   then open its root folder in Android Studio.
 3. Let Gradle sync finish, select a device or emulator, and run the `app` module.
+
+With GitHub CLI:
+
+```sh
+gh repo clone notrenflare/TubePreview
+cd TubePreview
+```
 
 Android 7.0 (API 24) or newer is required. The application ID is
 `com.renflare.tubepreview`. The Gradle wrapper manages the project's Gradle version.
@@ -65,7 +95,7 @@ Production code lives in `app/src/main/java/com/renflare/tubepreview/`, with dat
 UI components/screens, theming, and the ViewModel in separate packages. Local tests
 live in `app/src/test/`, and device tests in `app/src/androidTest/`.
 
-After making changes, review the diff, commit it, and push to your branch. Check the
-repository's Actions tab to confirm that the build and security checks pass.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the development workflow and checks.
+Build and security results are available in [GitHub Actions](https://github.com/notrenflare/TubePreview/actions).
 
-Made with ❤️ by **renflare**.
+Made with ❤️ by [**renflare**](https://github.com/notrenflare).
