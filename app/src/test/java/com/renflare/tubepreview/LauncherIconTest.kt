@@ -7,6 +7,7 @@ import android.graphics.Color
 import android.graphics.drawable.AdaptiveIconDrawable
 import androidx.test.core.app.ApplicationProvider
 import kotlin.math.hypot
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -18,6 +19,36 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk = [26, 36])
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class LauncherIconTest {
+    @Test
+    fun adaptiveBackgroundCoversForegroundMarginsWithOpaqueRed() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        for (resource in listOf(R.mipmap.ic_launcher, R.mipmap.ic_launcher_round)) {
+            for (size in listOf(24, 48, 96)) {
+                val icon = context.getDrawable(resource) as AdaptiveIconDrawable
+                icon.setBounds(0, 0, size, size)
+                val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+                try {
+                    icon.background.draw(Canvas(bitmap))
+                    // The foreground is inset. Every point behind it must remain
+                    // red so circular and rounded-square launcher masks show no halo.
+                    for (y in 0 until size) {
+                        for (x in 0 until size) {
+                            val pixel = bitmap.getPixel(x, y)
+                            assertEquals("Launcher background is transparent", 255, Color.alpha(pixel))
+                            assertTrue(
+                                "Launcher background is not red at ($x, $y)",
+                                Color.red(pixel) > Color.green(pixel) * 2 &&
+                                    Color.red(pixel) > Color.blue(pixel) * 2
+                            )
+                        }
+                    }
+                } finally {
+                    bitmap.recycle()
+                }
+            }
+        }
+    }
+
     @Test
     fun eyeFitsSafeAreaAtSmallAndLargeLauncherSizes() {
         val context = ApplicationProvider.getApplicationContext<Context>()

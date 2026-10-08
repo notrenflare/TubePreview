@@ -5,11 +5,13 @@
 The current UI and artwork refresh adds bundled Streamline Plump vector icons and
 Nunito fonts with attribution and license notices. The preview feed retains standard
 sans-serif typography, full-width thumbnails, and familiar Material navigation icons.
-It introduces no new permissions, network services, or credential use. All 34 local
+It introduces no new permissions, network services, or credential use. All 36 local
 unit tests, debug/release builds, and both lint variants pass. A fresh OSV check at
 2026-10-08T21:33:04Z found no known advisories among 320 resolved Maven package/version
 pairs. History-secret and independent build checks run in the private repository's
-GitHub Actions workflow.
+GitHub Actions workflow. The adaptive launcher's white background pixel was replaced
+with an opaque red drawable matching the supplied artwork; a regression check covers
+both launcher resources at 24, 48, and 96 pixels on API 26 and 36.
 
 The distributed APK is externally signed with the existing renflare certificate;
 its checksum and public signing fingerprint accompany the public 1.0 release.
