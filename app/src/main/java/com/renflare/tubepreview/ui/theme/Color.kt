@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.Color
 // YouTube-Inspired Creator Colors
 val YouTubeRed = Color(0xFFFF5E5E) // Brand-new YouTube-inspired warm-coral highlight
 val PureWhite = Color(0xFFFFFFFF)
-val RealBlack = Color(0xFF0F0F0F) // YouTube dark background
+val RealBlack = Color(0xFF000000) // Pure black canvas and primary surfaces
 val CardDarkGray = Color(0xFF272727) // Minimalist surface card gray
 val CardLightGray = Color(0xFFF2F2F2) // M3 Lavender gray container
 

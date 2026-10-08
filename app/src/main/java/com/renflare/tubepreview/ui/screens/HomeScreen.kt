@@ -1,7 +1,6 @@
 package com.renflare.tubepreview.ui.screens
 
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -32,14 +31,16 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.renflare.tubepreview.R
+import com.renflare.tubepreview.ui.components.BrandLogo
+import com.renflare.tubepreview.ui.components.rememberFeedBackdrop
+import com.renflare.tubepreview.ui.components.feedBackdropSource
+import com.renflare.tubepreview.ui.components.feedBackdropGlass
 import com.renflare.tubepreview.data.CreatorSettings
 import com.renflare.tubepreview.data.FeedVideo
 import com.renflare.tubepreview.ui.components.VideoCard
@@ -61,6 +62,7 @@ fun HomeScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
+    val feedBackdrop = rememberFeedBackdrop()
     val pullToRefreshState = rememberPullToRefreshState()
     var refreshRequested by remember { mutableStateOf(false) }
     LaunchedEffect(videoFeed) {
@@ -162,19 +164,10 @@ fun HomeScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.weight(1f)
                     ) {
-                        // The launcher foreground includes safe-zone padding. Display the
-                        // original artwork at 2x scale inside the approved header slot.
-                        Box(
-                            modifier = Modifier.size(width = 36.dp, height = 28.dp)
-                                .clip(androidx.compose.ui.graphics.RectangleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Image(
-                                painter = painterResource(R.mipmap.ic_launcher_foreground),
-                                contentDescription = "TubePreview",
-                                modifier = Modifier.requiredSize(72.dp)
-                            )
-                        }
+                        BrandLogo(
+                            darkTheme = settings.isDarkMode,
+                            modifier = Modifier.size(36.dp)
+                        )
                         Spacer(Modifier.width(7.dp))
                         Text(
                             text = "TubePreview",
@@ -274,17 +267,7 @@ fun HomeScreen(
                     .offset { IntOffset(x = 0, y = if (isRefreshing || pullToRefreshState.distanceFraction > 0f) 0 else animatedBottomOffset.roundToInt()) }
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
-                    // A solid backing keeps moving thumbnails from bleeding through the glass.
-                    .background(MaterialTheme.colorScheme.background)
-                    .background(
-                        Brush.verticalGradient(
-                            listOf(
-                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.90f),
-                                MaterialTheme.colorScheme.surface.copy(alpha = 0.76f)
-                            )
-                        ),
-                        RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
-                    )
+                    .feedBackdropGlass(feedBackdrop, MaterialTheme.colorScheme.background)
                     .border(
                         0.5.dp,
                         MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
@@ -378,6 +361,7 @@ fun HomeScreen(
             state = pullToRefreshState,
             modifier = Modifier
                 .fillMaxSize()
+                .feedBackdropSource(feedBackdrop)
                 .background(MaterialTheme.colorScheme.background),
             indicator = {
                 if (isRefreshing || pullToRefreshState.distanceFraction > 0f) {

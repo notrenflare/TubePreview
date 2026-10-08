@@ -16,7 +16,7 @@ home feed on Android. No YouTube account required.
 - Add a thumbnail and an optional channel photo.
 - Customize the channel name, video title, views, and duration.
 - See your video alongside sample videos and adjust its placement in the feed.
-- Switch between light and dark themes.
+- Compare light mode with a pure-black dark theme.
 - Reset your preview whenever you want a fresh start.
 
 TubePreview is an independent preview tool and is not affiliated with YouTube or Google.

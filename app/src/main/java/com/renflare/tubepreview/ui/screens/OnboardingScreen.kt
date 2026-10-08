@@ -3,7 +3,6 @@ package com.renflare.tubepreview.ui.screens
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -20,12 +19,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -35,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.renflare.tubepreview.R
 import com.renflare.tubepreview.data.CreatorSettings
+import com.renflare.tubepreview.ui.components.BrandLogo
 import com.renflare.tubepreview.ui.components.GlassTextField
 import com.renflare.tubepreview.ui.components.glassBorder
 import com.renflare.tubepreview.ui.components.glassBorderStroke
@@ -95,17 +93,10 @@ fun OnboardingScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        Box(
-                            modifier = Modifier.size(width = 40.dp, height = 30.dp).clipToBounds(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            // Match the splash logo, removing the adaptive icon's empty safe zone.
-                            Image(
-                                painter = painterResource(R.mipmap.ic_launcher_foreground),
-                                contentDescription = null,
-                                modifier = Modifier.requiredSize(80.dp)
-                            )
-                        }
+                        BrandLogo(
+                            darkTheme = settings.isDarkMode,
+                            modifier = Modifier.size(40.dp)
+                        )
                         Text(
                             text = stringResource(R.string.app_name),
                             fontSize = 18.sp,

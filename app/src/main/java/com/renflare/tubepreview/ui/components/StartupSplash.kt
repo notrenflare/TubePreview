@@ -8,13 +8,11 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -40,13 +38,11 @@ import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import com.renflare.tubepreview.R
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -109,7 +105,7 @@ fun StartupSplash(
     }
 
     // Match the starting window even if the saved light theme arrives mid-animation.
-    val background = Color(0xFF0F0F0F)
+    val background = Color.Black
     val view = LocalView.current
     val lightSystemBars = MaterialTheme.colorScheme.background.luminance() > 0.5f
     DisposableEffect(view, lightSystemBars) {
@@ -235,16 +231,14 @@ internal fun SplashArtwork(
 @Composable
 private fun OriginalSplashLogo(width: Float, alpha: Float) {
     Box(
-        modifier = Modifier.size(width.dp, (width * 0.73f).dp)
+        modifier = Modifier.size(width.dp)
             .graphicsLayer { this.alpha = alpha }
             .clip(RectangleShape),
         contentAlignment = Alignment.Center
     ) {
-        // Use the exact app asset, compensating for the adaptive-icon safe zone.
-        Image(
-            painter = painterResource(R.mipmap.ic_launcher_foreground),
-            contentDescription = null,
-            modifier = Modifier.requiredSize((width * 2f).dp)
+        BrandLogo(
+            darkTheme = true,
+            modifier = Modifier.size(width.dp)
         )
     }
 }

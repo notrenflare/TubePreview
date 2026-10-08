@@ -1,7 +1,6 @@
 package com.renflare.tubepreview.ui.theme
 
 import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -50,7 +49,7 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun TubePreviewTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = true,
     // Allow users to force theme styles explicitly
     dynamicColor: Boolean = false, // Keep YouTube branding colors sharp by default
     content: @Composable () -> Unit,
