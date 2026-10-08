@@ -16,7 +16,7 @@ home feed on Android. No YouTube account required.
 - Add a thumbnail and an optional channel photo.
 - Customize the channel name, video title, views, and duration.
 - See your video alongside sample videos and adjust its placement in the feed.
-- Compare light mode with a pure-black dark theme.
+- Switch between light mode and a pure-black dark theme, including during setup.
 - Reset your preview whenever you want a fresh start.
 
 TubePreview is an independent preview tool and is not affiliated with YouTube or Google.
@@ -24,20 +24,12 @@ It does not upload videos or modify your YouTube channel.
 
 ## Screenshots
 
-<table>
-  <tr>
-    <th>Get started</th>
-    <th>Dark feed</th>
-    <th>Light feed</th>
-    <th>Customize</th>
-  </tr>
-  <tr>
-    <td><img src="docs/screenshots/onboarding.png" width="210" alt="Fresh onboarding with the TubePreview logo and renflare channel name" /></td>
-    <td><img src="docs/screenshots/home-dark.png" width="210" alt="Default thumbnail preview in a dark home feed" /></td>
-    <td><img src="docs/screenshots/home-light.png" width="210" alt="The same default preview in a light home feed" /></td>
-    <td><img src="docs/screenshots/customize.png" width="210" alt="Channel and video customization with an empty thumbnail picker" /></td>
-  </tr>
-</table>
+<p align="center">
+  <a href="docs/screenshots/onboarding.png"><img src="docs/screenshots/onboarding.png" width="210" alt="TubePreview onboarding with a theme toggle" /></a>
+  <a href="docs/screenshots/home-dark.png"><img src="docs/screenshots/home-dark.png" width="210" alt="Thumbnail preview in the dark feed" /></a>
+  <a href="docs/screenshots/home-light.png"><img src="docs/screenshots/home-light.png" width="210" alt="Thumbnail preview in the light feed" /></a>
+  <a href="docs/screenshots/customize.png"><img src="docs/screenshots/customize.png" width="210" alt="Channel and video customization" /></a>
+</p>
 
 ## Build and run
 

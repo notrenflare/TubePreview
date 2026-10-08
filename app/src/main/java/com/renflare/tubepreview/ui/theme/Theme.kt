@@ -14,7 +14,7 @@ import android.app.Activity
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = YouTubeRed,
+    primary = BrandRed,
     secondary = MinimalDarkOnPrimaryContainer,
     tertiary = MinimalDarkSecondaryText,
     background = RealBlack,
@@ -22,7 +22,7 @@ private val DarkColorScheme = darkColorScheme(
     surfaceVariant = CardDarkGray,
     primaryContainer = MinimalDarkPrimaryContainer,
     onPrimaryContainer = MinimalDarkOnPrimaryContainer,
-    onPrimary = RealBlack,
+    onPrimary = PureWhite,
     onSecondary = MinimalDarkText,
     onBackground = MinimalDarkText,
     onSurface = MinimalDarkText,
@@ -31,7 +31,7 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = YouTubeRed,
+    primary = BrandRed,
     secondary = MinimalLightOnPrimaryContainer,
     tertiary = MinimalLightSecondaryText,
     background = MinimalLightBg,
@@ -51,7 +51,7 @@ private val LightColorScheme = lightColorScheme(
 fun TubePreviewTheme(
     darkTheme: Boolean = true,
     // Allow users to force theme styles explicitly
-    dynamicColor: Boolean = false, // Keep YouTube branding colors sharp by default
+    dynamicColor: Boolean = false, // Preserve the TubePreview brand palette by default
     content: @Composable () -> Unit,
 ) {
     val colorScheme = when {

@@ -44,7 +44,7 @@ import com.renflare.tubepreview.ui.components.feedBackdropGlass
 import com.renflare.tubepreview.data.CreatorSettings
 import com.renflare.tubepreview.data.FeedVideo
 import com.renflare.tubepreview.ui.components.VideoCard
-import com.renflare.tubepreview.ui.theme.YouTubeRed
+import com.renflare.tubepreview.ui.theme.BrandRed
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -165,7 +165,6 @@ fun HomeScreen(
                         modifier = Modifier.weight(1f)
                     ) {
                         BrandLogo(
-                            darkTheme = settings.isDarkMode,
                             modifier = Modifier.size(36.dp)
                         )
                         Spacer(Modifier.width(7.dp))
@@ -382,7 +381,7 @@ fun HomeScreen(
                         .padding(innerPadding),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = YouTubeRed)
+                    CircularProgressIndicator(color = BrandRed)
                 }
             } else {
                 LazyColumn(
@@ -486,7 +485,7 @@ fun ShortsShelfView(
             Box(
                 modifier = Modifier
                     .size(20.dp)
-                    .background(YouTubeRed, RoundedCornerShape(4.dp)),
+                    .background(BrandRed, RoundedCornerShape(4.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -616,7 +615,7 @@ fun ShortCardItem(
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
                         contentDescription = null,
-                        tint = YouTubeRed,
+                        tint = BrandRed,
                         modifier = Modifier.size(8.dp)
                     )
                     Spacer(modifier = Modifier.width(2.dp))

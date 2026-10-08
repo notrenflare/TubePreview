@@ -4,6 +4,6 @@
         <shape><solid android:color="@android:color/transparent" /></shape>
     </item>
     <item android:width="62dp" android:height="62dp" android:gravity="center">
-        <bitmap android:src="@drawable/brand_logo_dark" android:gravity="fill" android:filter="true" />
+        <bitmap android:src="@drawable/brand_logo" android:gravity="fill" android:filter="true" />
     </item>
 </layer-list>

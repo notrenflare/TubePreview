@@ -13,6 +13,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.rounded.AddPhotoAlternate
+import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -43,6 +45,7 @@ fun OnboardingScreen(
     settings: CreatorSettings,
     onSaveProfile: (String, Uri?) -> Unit,
     onNavigateNext: () -> Unit,
+    onToggleTheme: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var channelNameInput by rememberSaveable { mutableStateOf(settings.channelName) }
@@ -94,15 +97,28 @@ fun OnboardingScreen(
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         BrandLogo(
-                            darkTheme = settings.isDarkMode,
                             modifier = Modifier.size(40.dp)
                         )
                         Text(
                             text = stringResource(R.string.app_name),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onBackground
+                            color = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.weight(1f)
                         )
+                        IconButton(
+                            onClick = { onToggleTheme(!settings.isDarkMode) },
+                            modifier = Modifier
+                                .size(48.dp)
+                                .testTag("onboarding_theme_toggle")
+                        ) {
+                            Icon(
+                                imageVector = if (settings.isDarkMode) Icons.Outlined.LightMode else Icons.Outlined.DarkMode,
+                                contentDescription = if (settings.isDarkMode) "Switch to light mode" else "Switch to dark mode",
+                                tint = MaterialTheme.colorScheme.onBackground,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
                     }
                     Text(
                         text = "Preview before\nyou publish.",
@@ -219,32 +235,37 @@ fun OnboardingScreen(
                     }
                 }
 
-                Button(
-                    onClick = {
-                        onSaveProfile(channelNameInput.trim(), selectedProfileUri)
-                        onNavigateNext()
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = Color.White
-                    ),
-                    shape = RoundedCornerShape(12.dp),
-                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
+                val canContinue = channelNameInput.trim().isNotEmpty()
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(min = 52.dp)
-                        .testTag("onboarding_save_button"),
-                    enabled = channelNameInput.trim().isNotEmpty()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            if (canContinue) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+                        )
+                        .clickable(enabled = canContinue, role = Role.Button) {
+                            onSaveProfile(channelNameInput.trim(), selectedProfileUri)
+                            onNavigateNext()
+                        }
+                        .testTag("onboarding_save_button")
+                        .padding(horizontal = 20.dp, vertical = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
+                    val contentColor = if (canContinue) Color.White
+                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                     Text(
                         text = "Start previewing",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
+                        color = contentColor,
                         modifier = Modifier.weight(1f)
                     )
                     Icon(
                         imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
                         contentDescription = null,
+                        tint = contentColor,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -292,7 +313,8 @@ private fun OnboardingPreview(darkTheme: Boolean) {
                 placeholderDurationDefault = ""
             ),
             onSaveProfile = { _, _ -> },
-            onNavigateNext = {}
+            onNavigateNext = {},
+            onToggleTheme = {}
         )
     }
 }

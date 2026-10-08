@@ -6,6 +6,8 @@ import android.graphics.Color as AndroidColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.core.graphics.ColorUtils
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.core.app.ApplicationProvider
 import com.renflare.tubepreview.ui.theme.TubePreviewTheme
@@ -31,6 +33,9 @@ class BrandThemeTest {
         compose.runOnIdle {
             assertEquals(Color.Black, colors.background)
             assertEquals(Color.Black, colors.surface)
+            assertEquals(Color(0xFFDB2638), colors.primary)
+            assertEquals(Color.White, colors.onPrimary)
+            assertTrue(ColorUtils.calculateContrast(colors.onPrimary.toArgb(), colors.primary.toArgb()) >= 4.5)
         }
     }
 
@@ -38,26 +43,26 @@ class BrandThemeTest {
     fun explicitLightThemeHasWhiteCanvas() {
         lateinit var colors: ColorScheme
         compose.setContent { TubePreviewTheme(darkTheme = false) { colors = MaterialTheme.colorScheme } }
-        compose.runOnIdle { assertEquals(Color.White, colors.background) }
+        compose.runOnIdle {
+            assertEquals(Color.White, colors.background)
+            assertEquals(Color(0xFFDB2638), colors.primary)
+            assertEquals(Color.White, colors.onPrimary)
+            assertTrue(ColorUtils.calculateContrast(colors.onPrimary.toArgb(), colors.primary.toArgb()) >= 4.5)
+        }
     }
 
     @Test
-    fun brandVariantsPreserveTransparentMarginsAndDistinctOutlines() {
+    fun sharedLogoPreservesTransparentMarginsAndRedOutline() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        val dark = BitmapFactory.decodeResource(context.resources, R.drawable.brand_logo_dark)
-        val light = BitmapFactory.decodeResource(context.resources, R.drawable.brand_logo_light)
+        val logo = BitmapFactory.decodeResource(context.resources, R.drawable.brand_logo)
         try {
-            assertEquals(0, AndroidColor.alpha(dark.getPixel(0, 0)))
-            assertEquals(0, AndroidColor.alpha(light.getPixel(0, 0)))
-            val redOutline = dark.getPixel(512, 310)
-            val blackOutline = light.getPixel(512, 310)
-            assertTrue(AndroidColor.red(redOutline) > AndroidColor.green(redOutline) * 2)
-            assertTrue(AndroidColor.red(blackOutline) < 40)
-            assertEquals(255, AndroidColor.alpha(redOutline))
-            assertEquals(255, AndroidColor.alpha(blackOutline))
+            assertEquals(0, AndroidColor.alpha(logo.getPixel(0, 0)))
+            assertEquals(0, AndroidColor.alpha(logo.getPixel(1023, 1023)))
+            val outline = logo.getPixel(512, 300)
+            assertTrue(AndroidColor.red(outline) > AndroidColor.green(outline) * 2)
+            assertEquals(255, AndroidColor.alpha(outline))
         } finally {
-            dark.recycle()
-            light.recycle()
+            logo.recycle()
         }
     }
 }

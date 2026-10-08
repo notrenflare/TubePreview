@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.renflare.tubepreview.data.CreatorSettings
-import com.renflare.tubepreview.ui.theme.YouTubeRed
+import com.renflare.tubepreview.ui.theme.BrandRed
 import com.renflare.tubepreview.ui.components.glassBorder
 import com.renflare.tubepreview.ui.components.glassBorderStroke
 import com.renflare.tubepreview.ui.components.GlassTextField
@@ -422,10 +422,10 @@ fun SettingsScreen(
                                     modifier = Modifier
                                         .weight(1f)
                                         .clip(RoundedCornerShape(8.dp))
-                                        .background(if (isSelected) YouTubeRed else MaterialTheme.colorScheme.surface)
+                                        .background(if (isSelected) BrandRed else MaterialTheme.colorScheme.surface)
                                         .border(
                                             width = 1.dp,
-                                            color = if (isSelected) YouTubeRed else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
+                                            color = if (isSelected) BrandRed else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
                                             shape = RoundedCornerShape(8.dp)
                                         )
                                         .clickable { onUpdateFeedSize(limit) }
@@ -513,7 +513,7 @@ fun SettingsScreen(
                             onCheckedChange = onUpdateDarkMode,
                             colors = SwitchDefaults.colors(
                                 checkedThumbColor = Color.White,
-                                checkedTrackColor = YouTubeRed,
+                                checkedTrackColor = BrandRed,
                                 uncheckedThumbColor = MaterialTheme.colorScheme.onSurface,
                                 uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
                             ),
@@ -639,7 +639,7 @@ fun SettingsScreen(
             ) {
                 HorizontalDivider(
                     modifier = Modifier.width(36.dp),
-                    color = YouTubeRed.copy(alpha = 0.4f)
+                    color = BrandRed.copy(alpha = 0.4f)
                 )
                 Text(
                     text = buildAnnotatedString {
@@ -672,7 +672,7 @@ fun SectionHeader(icon: androidx.compose.ui.graphics.vector.ImageVector, title: 
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = YouTubeRed,
+            tint = BrandRed,
             modifier = Modifier.size(20.dp)
         )
         Text(

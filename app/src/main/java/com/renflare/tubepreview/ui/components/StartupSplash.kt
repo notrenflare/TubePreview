@@ -28,7 +28,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.RectangleShape
@@ -43,6 +42,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.renflare.tubepreview.ui.theme.BrandRed
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -171,7 +171,7 @@ internal fun SplashArtwork(
             val bodyCenter = center + Offset(mix(0f, 16f).dp.toPx(), 0f)
             val topLeft = bodyCenter - Offset(bodyWidth / 2f, bodyHeight / 2f)
             val radius = mix(18f, 1.5f).dp.toPx()
-            val trackColor = lerp(Color(0xFFD93636), Color(0xFFBDBDBD), m)
+            val trackColor = lerp(BrandRed, Color(0xFFBDBDBD), m)
             // Move the triangle's trailing edge from just before the track
             // to its far end, clipping away everything it has passed.
             val sweepPosition = sweep.coerceIn(0f, 1f)
@@ -201,10 +201,7 @@ internal fun SplashArtwork(
                         bottom = topLeft.y + bodyHeight
                     ) {
                         drawRoundRect(
-                            brush = Brush.horizontalGradient(
-                                listOf(Color(0xFFFF3B30), Color(0xFFFF3355), Color(0xFFFF2C91)),
-                                startX = topLeft.x, endX = topLeft.x + bodyWidth
-                            ),
+                            color = BrandRed,
                             topLeft = topLeft,
                             size = Size(bodyWidth, bodyHeight),
                             cornerRadius = CornerRadius(radius)
@@ -237,7 +234,6 @@ private fun OriginalSplashLogo(width: Float, alpha: Float) {
         contentAlignment = Alignment.Center
     ) {
         BrandLogo(
-            darkTheme = true,
             modifier = Modifier.size(width.dp)
         )
     }

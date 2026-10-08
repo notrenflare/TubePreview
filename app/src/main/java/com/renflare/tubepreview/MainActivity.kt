@@ -46,6 +46,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         if (Build.VERSION.SDK_INT >= 29) {
             window.isNavigationBarContrastEnforced = false
+            // Compose owns both palettes; system Force Dark must not recolor them.
+            window.decorView.isForceDarkAllowed = false
         }
         setContent {
             val viewModel: CreatorViewModel = viewModel()
@@ -77,6 +79,7 @@ class MainActivity : ComponentActivity() {
                                             viewModel.setChannelName(name)
                                             uri?.let { viewModel.setProfilePictureFromUri(it) }
                                         },
+                                        onToggleTheme = viewModel::setDarkMode,
                                         onNavigateNext = {
                                             viewModel.setIsOnboarded(true)
                                             navController.navigate("home") {
