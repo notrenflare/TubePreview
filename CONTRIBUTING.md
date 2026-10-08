@@ -6,8 +6,8 @@ Use Android Studio, JDK 21, Android SDK Platform 37, and Node.js 22 or newer.
 Clone the repository with an account that has access and open the root directory.
 Run the `app` configuration on Android 7.0 (API 24) or newer.
 
-The app does not require API keys or a backend. Release signing is configured
-through environment variables; see [README.md](README.md#release-builds).
+The app does not require API keys or a backend. The application ID is
+`com.renflare.tubepreview`; the Gradle wrapper manages the Gradle version.
 
 ## Making a change
 
@@ -28,6 +28,17 @@ git diff --check
 Device tests live in `app/src/androidTest/` and run separately on an emulator or
 connected device. CI runs local unit tests, builds, lint, dependency checks, and
 Git history secret scans.
+
+## Release signing and distribution
+
+Supply `KEYSTORE_PATH`, `STORE_PASSWORD`, and `KEY_PASSWORD` through the local
+build environment. The signing key alias is `upload`. Keep the keystore outside
+this repository and retain an encrypted backup; app updates must use the same
+signing identity. Never put passwords in commands, committed files, or logs.
+
+Without a release keystore, `assembleRelease` produces an unsigned APK that must
+not be published as an installable release. See [Distribution](docs/DISTRIBUTION.md)
+for the public download repository and release checklist.
 
 ## Project layout
 

@@ -7,8 +7,7 @@
 **Preview before you publish.**
 
 See how your thumbnails, titles, and channel branding look in a YouTube-style
-home feed. Built for Android with Kotlin and Jetpack Compose, with no YouTube
-sign-in or API key required.
+home feed on Android. No YouTube account required.
 
 ## What you can do
 
@@ -38,36 +37,15 @@ It does not upload videos or modify your YouTube channel.
   </tr>
 </table>
 
-Captured on a Samsung Galaxy A55 after clearing app data. The feed uses sample
-content; the preview card stays empty until you choose a thumbnail.
-
 ## Build and run
 
-1. Install Android Studio with JDK 21 and Android SDK Platform 37.
-2. Clone `notrenflare/TubePreview` while signed in to an account with repository access,
-   then open its root folder in Android Studio.
-3. Let Gradle sync finish, select a device or emulator, and run the `app` module.
+Requires Android 7.0 (API 24) or newer.
 
-With GitHub CLI:
-
-```sh
-gh repo clone notrenflare/TubePreview
-cd TubePreview
-```
-
-Android 7.0 (API 24) or newer is required. The application ID is
-`com.renflare.tubepreview`. The Gradle wrapper manages the project's Gradle version.
-
-To build from a terminal with the Android SDK configured:
+Open the project in Android Studio with JDK 21 and Android SDK Platform 37.
+After Gradle sync completes, run the `app` configuration on a device or emulator.
 
 ```sh
 bash ./gradlew :app:assembleDebug
-```
-
-To run the unit tests and lint:
-
-```sh
-bash ./gradlew :app:testDebugUnitTest :app:lintDebug :app:lintRelease
 ```
 
 ## Privacy and security
@@ -77,25 +55,12 @@ sign-in or backend service, and imported images are not uploaded. Sample feed ph
 load from Unsplash over HTTPS. App data is excluded from Android backup and device
 transfer; uninstalling the app removes your local preview settings.
 
-See [SECURITY.md](SECURITY.md) for vulnerability reporting and repeatable checks,
-and [SECURITY_AUDIT.md](SECURITY_AUDIT.md) for the dated security review and its limits.
-GitHub Actions checks builds, unit tests, lint, secrets, and resolved dependency
-advisories. Dependabot checks for dependency updates weekly.
-
-## Release builds
-
-Release signing credentials are supplied externally through `KEYSTORE_PATH`,
-`STORE_PASSWORD`, and `KEY_PASSWORD`. Keep the keystore and passwords outside Git.
-Without a release keystore, the release APK is unsigned. Source publication on
-GitHub does not publish an app to Google Play or create a downloadable signed release.
+See [SECURITY.md](SECURITY.md) to report a vulnerability.
 
 ## Development
 
-Production code lives in `app/src/main/java/com/renflare/tubepreview/`, with data,
-UI components/screens, theming, and the ViewModel in separate packages. Local tests
-live in `app/src/test/`, and device tests in `app/src/androidTest/`.
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the development workflow and checks.
-Build and security results are available in [GitHub Actions](https://github.com/notrenflare/TubePreview/actions).
+Built with Kotlin and Jetpack Compose. See [CONTRIBUTING.md](CONTRIBUTING.md)
+for setup, validation, and release signing. Build and security results are available
+in [GitHub Actions](https://github.com/notrenflare/TubePreview/actions).
 
 Made with ❤️ by [**renflare**](https://github.com/notrenflare).
