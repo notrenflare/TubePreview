@@ -31,14 +31,14 @@ Git history secret scans.
 
 ## Release signing and distribution
 
-Supply `KEYSTORE_PATH`, `STORE_PASSWORD`, and `KEY_PASSWORD` through the local
-build environment. The signing key alias is `upload`. Keep the keystore outside
-this repository and retain an encrypted backup; app updates must use the same
-signing identity. Never put passwords in commands, committed files, or logs.
+The release identity is retained in macOS Keychain. Use
+[scripts/sign-release.mjs](scripts/sign-release.mjs) to sign an unsigned APK with
+that existing identity. See [Distribution](docs/DISTRIBUTION.md) for commands,
+backup and recovery, and the public download repository's release checklist.
 
-Without a release keystore, `assembleRelease` produces an unsigned APK that must
-not be published as an installable release. See [Distribution](docs/DISTRIBUTION.md)
-for the public download repository and release checklist.
+Gradle also supports `KEYSTORE_PATH`, `STORE_PASSWORD`, and `KEY_PASSWORD` from
+the local build environment, using alias `upload`. Keep signing material outside
+Git. Never put passwords in shell command arguments, committed files, or logs.
 
 ## Project layout
 

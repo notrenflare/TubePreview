@@ -9,6 +9,8 @@
 See how your thumbnails, titles, and channel branding look in a YouTube-style
 home feed on Android. No YouTube account required.
 
+[**Download the latest APK →**](https://github.com/notrenflare/TubePreview-releases/releases/latest)
+
 ## What you can do
 
 - Add a thumbnail and an optional channel photo.
