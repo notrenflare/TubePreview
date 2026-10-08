@@ -165,10 +165,23 @@ initialized Git on `main` and verified a clean copy of the staged files independ
 of ignored local IDE files: 22 unit tests, both application builds, and both lint
 variants pass. A fresh OSV check at 2026-10-08T01:52:20Z found no advisories among 320
 resolved Maven package/version pairs; the staged publication secret scan also passed.
-CI will scan history after publication, but has not yet run on GitHub. GitHub scanning,
-push protection, private vulnerability reporting, and required branch checks still
-need to be enabled in the new repository where available. Publish through Git, not a
-full workspace ZIP.
+The reviewed source was published through Git to the private repository
+[notrenflare/TubePreview](https://github.com/notrenflare/TubePreview). Fresh onboarding,
+dark/light feed, and customization screenshots use a cleared test installation.
+No credentials, local IDE state, build outputs, or signing material were uploaded.
+
+The initial GitHub Actions history scan passed. Its Android job found a vendor-specific
+Gradle daemon requirement that attempted to download a JetBrains JDK despite the runner
+having Temurin 21 installed. The daemon criteria now accept any locally installed JDK 21;
+local unit tests, both app variants, and both lint variants pass with that configuration.
+Current CI results are available in the repository's Actions tab.
+
+Dependabot vulnerability alerts and automated security updates are enabled. Workflow
+default permissions are read-only, and workflows cannot approve pull requests. GitHub
+rejected private main-branch protection with an upgrade requirement and rejected hosted
+secret scanning as unavailable for this repository; neither is claimed as enabled.
+The CI Gitleaks history scan remains configured. Private vulnerability reporting applies
+to public repositories; this private repository uses the reporting route in SECURITY.md.
 
 The release APK produced locally is unsigned because no release keystore is present.
 Configure external signing environment variables before distributing a release.
