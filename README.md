@@ -4,15 +4,12 @@
 
 # TubePreview
 
-**Preview before you publish.**
-
-I built TubePreview to check how a thumbnail looks in a YouTube-style feed before
-publishing. Add your image, try a title, and see it alongside sample videos.
-No YouTube sign-in needed.
+TubePreview is an Android app for previewing thumbnails and titles in a
+YouTube-style feed before publishing. No YouTube sign-in required.
 
 [**Download the latest APK →**](https://github.com/notrenflare/TubePreview-releases/releases/latest)
 
-## What you can do
+## Features
 
 - See your thumbnail alongside sample videos and choose where it appears.
 - Try different titles, channel photos, names, view counts, and durations.
