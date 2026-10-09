@@ -76,6 +76,29 @@ fun SettingsScreen(
             confirmButton = { TextButton(onClick = { showFontLicense = false }) { Text("Done") } }
         )
     }
+    var showAssetLicenses by remember { mutableStateOf(false) }
+    if (showAssetLicenses) {
+        AlertDialog(
+            onDismissRequest = { showAssetLicenses = false },
+            title = { Text("Third-party licenses") },
+            text = {
+                Column {
+                    Text("Free icons from Streamline, adapted for TubePreview. Licensed under CC BY 4.0.")
+                    TextButton(onClick = { uriHandler.openUri("https://streamlinehq.com") }) {
+                        Text("Streamline")
+                    }
+                    TextButton(onClick = { uriHandler.openUri("https://creativecommons.org/licenses/by/4.0/") }) {
+                        Text("Creative Commons Attribution 4.0")
+                    }
+                    TextButton(onClick = {
+                        showAssetLicenses = false
+                        showFontLicense = true
+                    }) { Text("Nunito · Open Font License") }
+                }
+            },
+            confirmButton = { TextButton(onClick = { showAssetLicenses = false }) { Text("Done") } }
+        )
+    }
     val focusManager = LocalFocusManager.current
     var showResetConfirmation by rememberSaveable { mutableStateOf(false) }
 
@@ -618,7 +641,8 @@ fun SettingsScreen(
                     Button(
                         onClick = { showResetConfirmation = true },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError
                         ),
                         shape = RoundedCornerShape(20.dp),
                         modifier = Modifier
@@ -635,6 +659,15 @@ fun SettingsScreen(
                         }
                     }
                 }
+            }
+
+            TextButton(
+                onClick = { showAssetLicenses = true },
+                modifier = Modifier.fillMaxWidth().testTag("settings_asset_licenses")
+            ) {
+                Icon(PlumpIcons.Feed, null, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.width(8.dp))
+                Text("Third-party licenses")
             }
 
             Column(
@@ -664,12 +697,6 @@ fun SettingsScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
-                TextButton(onClick = { uriHandler.openUri("https://streamlinehq.com") }) {
-                    Text("Free icons from Streamline", style = MaterialTheme.typography.bodySmall)
-                }
-                TextButton(onClick = { showFontLicense = true }) {
-                    Text("Nunito font · Open Font License", style = MaterialTheme.typography.bodySmall)
-                }
             }
         }
     }

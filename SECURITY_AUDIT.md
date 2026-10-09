@@ -1,5 +1,27 @@
 # Security review
 
+## Feed controls and metadata follow-up, 2026-10-09
+
+The feed refresh exposes theme, notifications, and search controls without an
+overflow menu, uses compact display-only metadata, pill duration badges,
+horizontal context controls, a flush bottom navigation bar, and revised Shorts
+artwork and tile layout. Third-party credits remain accessible from a dedicated
+licenses entry in Settings. Saved preview values and image import behavior are
+preserved. The change adds no permissions, dependencies, network destinations,
+credential use, or exported Android components.
+
+All 40 local unit tests pass with zero failures or skips. Debug/release builds and
+both lint variants pass. A fresh OSV check at 2026-10-09T04:42:53Z found no known
+advisories among 320 resolved Maven package/version pairs. Native emulator review
+covers dark/light mode, the Shorts shelf, the settings footer, and a 320dp phone
+width at 130% text size. Unused floating-bar backdrop code was removed. The existing
+signing certificate and application ID are retained for distribution.
+
+The owner reports that the earlier Play Protect warning disappeared after the
+review submission. This is a device observation, not a claim that Google has
+approved every future APK or that all devices will show identical installation
+behavior. New binaries can receive independent install-time security checks.
+
 ## UI and branding follow-up, 2026-10-09
 
 The current UI and artwork refresh adds bundled Streamline Plump vector icons and

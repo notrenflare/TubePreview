@@ -4,9 +4,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AddPhotoAlternate
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -55,7 +53,7 @@ fun VideoThumbnail(video: FeedVideo, modifier: Modifier = Modifier) {
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Icon(
-                    Icons.Outlined.AddPhotoAlternate,
+                    PlumpIcons.Gallery,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(32.dp)
@@ -114,7 +112,7 @@ private fun DurationBadge(
     thumbnailSize: IntSize,
     modifier: Modifier = Modifier
 ) {
-    val shape = RoundedCornerShape(4.dp)
+    val shape = CircleShape
     Box(modifier.clip(shape).testTag("thumbnail_duration")) {
         if (painter != null && thumbnailSize.width > 0) {
             // Reuse the loaded painter to blur only the image region underneath this badge.
@@ -147,7 +145,7 @@ private fun DurationBadge(
             fontSize = 12.sp,
             fontWeight = FontWeight.Medium,
             fontFamily = FontFamily.SansSerif,
-            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
         )
     }
 }

@@ -5,7 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -90,15 +90,7 @@ fun VideoCard(
 
                     Spacer(modifier = Modifier.height(4.dp))
 
-                    Text(
-                        text = listOf(video.channelName, video.views, video.uploadTime)
-                            .filter { it.isNotBlank() }.joinToString(" · "),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontFamily = FontFamily.SansSerif,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                    FeedMetadata(video)
                 }
 
                 // Action Column (Optional Context Menus)
@@ -107,7 +99,7 @@ fun VideoCard(
                     modifier = Modifier.size(48.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.MoreVert,
+                        imageVector = Icons.Outlined.MoreHoriz,
                         contentDescription = "Options menu",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(24.dp)

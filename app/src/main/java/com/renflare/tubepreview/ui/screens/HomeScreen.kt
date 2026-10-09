@@ -2,7 +2,6 @@ package com.renflare.tubepreview.ui.screens
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -44,9 +43,9 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
-import com.renflare.tubepreview.ui.components.rememberFeedBackdrop
-import com.renflare.tubepreview.ui.components.feedBackdropSource
-import com.renflare.tubepreview.ui.components.feedBackdropGlass
+import com.renflare.tubepreview.ui.components.ShortsIcon
+import androidx.compose.ui.res.vectorResource
+import com.renflare.tubepreview.R
 import com.renflare.tubepreview.data.CreatorSettings
 import com.renflare.tubepreview.data.FeedVideo
 import com.renflare.tubepreview.ui.components.VideoCard
@@ -68,7 +67,6 @@ fun HomeScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
-    val feedBackdrop = rememberFeedBackdrop()
     val pullToRefreshState = rememberPullToRefreshState()
     var refreshRequested by remember { mutableStateOf(false) }
     LaunchedEffect(videoFeed) {
@@ -159,11 +157,15 @@ fun HomeScreen(
                     .background(MaterialTheme.colorScheme.background)
             ) {
                 BoxWithConstraints(Modifier.statusBarsPadding().fillMaxWidth()) {
-                    val compactHeader = maxWidth < 380.dp || LocalDensity.current.fontScale > 1.15f
-                    var menuExpanded by remember { mutableStateOf(false) }
+                    val compactHeader = maxWidth < 380.dp
+                    val wordmarkSize = when {
+                        maxWidth < 340.dp -> 18.sp
+                        compactHeader -> 20.sp
+                        else -> 22.sp
+                    }
                     Row(
                         modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)
-                            .padding(start = 16.dp, end = 8.dp),
+                            .padding(start = 12.dp, end = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(
@@ -171,12 +173,12 @@ fun HomeScreen(
                             modifier = Modifier.weight(1f)
                         ) {
                             BrandLogo(
-                                modifier = Modifier.size(32.dp)
+                                modifier = Modifier.size(if (compactHeader) 28.dp else 32.dp)
                             )
-                            Spacer(Modifier.width(7.dp))
+                            Spacer(Modifier.width(6.dp))
                             Text(
                                 text = "TubePreview",
-                                fontSize = 22.sp,
+                                fontSize = wordmarkSize,
                                 fontFamily = FontFamily.SansSerif,
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = (-0.5).sp,
@@ -191,46 +193,18 @@ fun HomeScreen(
                             onClick = { onToggleTheme(!settings.isDarkMode) },
                             modifier = Modifier.testTag("home_theme_toggle")
                         )
-                        Spacer(Modifier.width(6.dp))
-                        if (compactHeader) {
-                            Box {
-                                FeedIconButton(
-                                    icon = Icons.Outlined.MoreVert,
-                                    contentDescription = "More feed options",
-                                    onClick = { menuExpanded = true }
-                                )
-                                DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
-                                    DropdownMenuItem(
-                                        text = { Text("Notifications") },
-                                        leadingIcon = { Icon(Icons.Outlined.NotificationsNone, null) },
-                                        onClick = {
-                                            menuExpanded = false
-                                            scope.launch { snackbarHostState.showSnackbar("No notifications yet") }
-                                        }
-                                    )
-                                    DropdownMenuItem(
-                                        text = { Text("Search videos") },
-                                        leadingIcon = { Icon(Icons.Outlined.Search, null) },
-                                        onClick = {
-                                            menuExpanded = false
-                                            scope.launch { snackbarHostState.showSnackbar("Search is not available in the preview feed") }
-                                        }
-                                    )
-                                }
-                            }
-                        } else {
-                            FeedIconButton(
-                                icon = Icons.Outlined.NotificationsNone,
-                                contentDescription = "Notifications",
-                                onClick = { scope.launch { snackbarHostState.showSnackbar("No notifications yet") } }
-                            )
-                            Spacer(Modifier.width(6.dp))
-                            FeedIconButton(
-                                icon = Icons.Outlined.Search,
-                                contentDescription = "Search videos",
-                                onClick = { scope.launch { snackbarHostState.showSnackbar("Search is not available in the preview feed") } }
-                            )
-                        }
+                        FeedIconButton(
+                            icon = Icons.Outlined.NotificationsNone,
+                            contentDescription = "Notifications",
+                            onClick = { scope.launch { snackbarHostState.showSnackbar("No notifications yet") } },
+                            modifier = Modifier.testTag("home_notifications")
+                        )
+                        FeedIconButton(
+                            icon = Icons.Outlined.Search,
+                            contentDescription = "Search videos",
+                            onClick = { scope.launch { snackbarHostState.showSnackbar("Search is not available in the preview feed") } },
+                            modifier = Modifier.testTag("home_search")
+                        )
                     }
                 }
 
@@ -244,7 +218,7 @@ fun HomeScreen(
                             selected = selectedCategory == "Explore",
                             onClick = { selectedCategory = "Explore" },
                             modifier = Modifier.testTag("home_explore_tab"),
-                            icon = Icons.Outlined.Explore
+                            icon = ImageVector.vectorResource(R.drawable.feed_explore)
                         )
                     }
                     items(categories) { category ->
@@ -264,20 +238,12 @@ fun HomeScreen(
                     .onSizeChanged { bottomBarHeightPx = it.height.toFloat() }
                     .offset { IntOffset(x = 0, y = if (isRefreshing || pullToRefreshState.distanceFraction > 0f) 0 else animatedBottomOffset.roundToInt()) }
                     .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.background)
                     .windowInsetsPadding(WindowInsets.navigationBars)
-                    .padding(horizontal = 8.dp, vertical = 6.dp)
-                    .clip(RoundedCornerShape(20.dp))
-                    .feedBackdropGlass(feedBackdrop, MaterialTheme.colorScheme.background)
-                    .border(
-                        0.5.dp,
-                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
-                        RoundedCornerShape(20.dp)
-                    )
-                    .padding(horizontal = 4.dp, vertical = 6.dp)
-                    .testTag("home_glass_bottom_bar")
+                    .testTag("home_bottom_bar")
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    modifier = Modifier.fillMaxWidth().height(64.dp),
                     horizontalArrangement = Arrangement.SpaceAround,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -312,7 +278,7 @@ fun HomeScreen(
                         ) {
                             if (isCreate) {
                                 Box(
-                                    modifier = Modifier.size(36.dp)
+                                    modifier = Modifier.size(40.dp)
                                         .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape),
                                     contentAlignment = Alignment.Center
                                 ) {
@@ -326,6 +292,8 @@ fun HomeScreen(
                                         contentScale = ContentScale.Crop,
                                         modifier = Modifier.size(24.dp).clip(CircleShape)
                                     )
+                                } else if (title == "Shorts") {
+                                    ShortsIcon(outlined = true, modifier = Modifier.size(24.dp))
                                 } else {
                                     Icon(
                                         icon,
@@ -340,7 +308,7 @@ fun HomeScreen(
                                     modifier = Modifier.semantics { if (title == "Subscriptions") contentDescription = title },
                                     color = MaterialTheme.colorScheme.onBackground,
                                     fontFamily = FontFamily.SansSerif,
-                                    fontSize = 10.sp,
+                                    fontSize = 11.sp,
                                     lineHeight = 12.sp,
                                     fontWeight = if (title == "Home") FontWeight.Medium else FontWeight.Normal,
                                     maxLines = 1,
@@ -364,7 +332,6 @@ fun HomeScreen(
             state = pullToRefreshState,
             modifier = Modifier
                 .fillMaxSize()
-                .feedBackdropSource(feedBackdrop)
                 .background(MaterialTheme.colorScheme.background),
             indicator = {
                 if (isRefreshing || pullToRefreshState.distanceFraction > 0f) {
@@ -489,12 +456,15 @@ private fun FeedCategoryChip(
         Box(
             Modifier.clip(RoundedCornerShape(8.dp))
                 .background(if (selected) colors.onSurface else colors.surfaceVariant)
-                .padding(horizontal = 12.dp, vertical = 7.dp),
+                .then(
+                    if (icon != null) Modifier.size(width = 42.dp, height = 32.dp)
+                    else Modifier.padding(horizontal = 12.dp, vertical = 7.dp)
+                ),
             contentAlignment = Alignment.Center
         ) {
             if (icon != null) {
                 Icon(icon, "Explore", tint = if (selected) colors.surface else colors.onSurface,
-                    modifier = Modifier.size(18.dp))
+                    modifier = Modifier.size(24.dp))
             } else {
                 Text(text.orEmpty(), color = if (selected) colors.surface else colors.onSurface,
                     fontFamily = FontFamily.SansSerif, fontSize = 14.sp, lineHeight = 18.sp,
@@ -522,63 +492,40 @@ fun ShortsShelfView(
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 12.dp, horizontal = 14.dp)
+        modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 12.dp)
+            .testTag("home_shorts_shelf")
     ) {
-        // Shorts Shelf visual title header
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(bottom = 12.dp)
+            Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier
-                    .size(20.dp)
-                    .background(BrandRed, RoundedCornerShape(4.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.PlayArrow,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(12.dp).offset(x = 0.5.dp)
-                )
-            }
-            Spacer(modifier = Modifier.width(6.dp))
+            ShortsIcon(modifier = Modifier.size(32.dp))
+            Spacer(Modifier.width(12.dp))
             Text(
-                text = "Shorts",
-                fontSize = 20.sp,
-                fontFamily = FontFamily.SansSerif,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
+                "Shorts", fontSize = 20.sp, fontFamily = FontFamily.SansSerif,
+                fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.weight(1f)
+            )
+            FeedIconButton(
+                Icons.Outlined.MoreHoriz, "Shorts options",
+                onClick = { onShortClick("Shorts options") }
             )
         }
-
-        // 2-columns x 2-rows static responsive layout
-        val shorts = listOf(
-            Triple("This camera fits in my pocket", "1.8M views", 0),
-            Triple("My favorite five-minute breakfast", "840K views", 1),
-            Triple("I could listen to this keyboard all day", "3.2M views", 2),
-            Triple("The city after everyone goes home", "440K views", 3)
+        val titles = listOf(
+            "This camera fits in my pocket",
+            "My favorite five-minute breakfast",
+            "I could listen to this keyboard all day",
+            "The city after everyone goes home"
         )
-
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            // Row 1 (2 columns)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Box(modifier = Modifier.weight(1f)) {
-                    ShortCardItem(title = shorts[0].first, views = shorts[0].second, gradientIndex = shorts[0].third, onShortClick = onShortClick)
-                }
-                Box(modifier = Modifier.weight(1f)) {
-                    ShortCardItem(title = shorts[1].first, views = shorts[1].second, gradientIndex = shorts[1].third, onShortClick = onShortClick)
-                }
-            }
-            // Row 2 (2 columns)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Box(modifier = Modifier.weight(1f)) {
-                    ShortCardItem(title = shorts[2].first, views = shorts[2].second, gradientIndex = shorts[2].third, onShortClick = onShortClick)
-                }
-                Box(modifier = Modifier.weight(1f)) {
-                    ShortCardItem(title = shorts[3].first, views = shorts[3].second, gradientIndex = shorts[3].third, onShortClick = onShortClick)
+            titles.chunked(2).forEachIndexed { row, pair ->
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    pair.forEachIndexed { column, title ->
+                        ShortCardItem(
+                            title = title, gradientIndex = row * 2 + column,
+                            onShortClick = onShortClick, modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
             }
         }
@@ -588,24 +535,16 @@ fun ShortsShelfView(
 @Composable
 fun ShortCardItem(
     title: String,
-    views: String,
     gradientIndex: Int,
-    onShortClick: (String) -> Unit
+    onShortClick: (String) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    var imageLoaded by remember(gradientIndex) { mutableStateOf(false) }
-
     Card(
-        shape = RoundedCornerShape(12.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(9f / 16f)
+        shape = RoundedCornerShape(8.dp),
+        modifier = modifier.fillMaxWidth().aspectRatio(2f / 3f)
             .clickable { onShortClick(title) }
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-        ) {
+        Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceVariant)) {
             AsyncImage(
                 model = com.renflare.tubepreview.data.MockFeedProvider.photoUrl(
                     listOf(
@@ -613,67 +552,31 @@ fun ShortCardItem(
                         "1490645935967-10de6ba17061",
                         "1587829741301-dc798b83add3",
                         "1480714378408-67cf0d13bc1b"
-                    )[gradientIndex.coerceIn(0, 3)],
-                    480, 854
+                    )[gradientIndex.coerceIn(0, 3)], 480, 720
                 ),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                onSuccess = { imageLoaded = true },
-                onLoading = { imageLoaded = false },
-                onError = { imageLoaded = false },
+                contentDescription = null, contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
-            if (imageLoaded) {
             Box(
                 Modifier.fillMaxSize().background(
-                    Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.85f)))
+                    Brush.verticalGradient(
+                        0f to Color.Transparent, 0.5f to Color.Transparent,
+                        1f to Color.Black.copy(alpha = 0.8f)
+                    )
                 )
             )
-            // View count and title overlays
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(8.dp)
+            Text(
+                title, color = Color.White, fontWeight = FontWeight.Medium,
+                fontSize = 14.sp, lineHeight = 18.sp, fontFamily = FontFamily.SansSerif,
+                maxLines = 2, overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.align(Alignment.BottomStart).padding(8.dp)
+            )
+            IconButton(
+                onClick = { onShortClick(title) },
+                modifier = Modifier.align(Alignment.TopEnd).size(48.dp)
             ) {
-                Text(
-                    text = title,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp,
-                    fontFamily = FontFamily.SansSerif,
-                    maxLines = 2,
-                    lineHeight = 18.sp,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = views,
-                    color = Color.White.copy(alpha = 0.8f),
-                    fontSize = 12.sp,
-                    fontFamily = FontFamily.SansSerif,
-                    fontWeight = FontWeight.Normal
-                )
-            }
-
-            // Shorts branding tag
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(6.dp)
-                    .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
-                    .padding(horizontal = 4.dp, vertical = 2.dp)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Outlined.PlayArrow,
-                        contentDescription = null,
-                        tint = BrandRed,
-                        modifier = Modifier.size(8.dp)
-                    )
-                    Spacer(modifier = Modifier.width(2.dp))
-                    Text("SHORTS", color = Color.White, fontSize = 7.sp, fontWeight = FontWeight.Black)
-                }
-            }
+                Icon(Icons.Outlined.MoreHoriz, "Options for $title",
+                    tint = Color.White, modifier = Modifier.size(24.dp))
             }
         }
     }

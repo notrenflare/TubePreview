@@ -19,7 +19,7 @@ import org.robolectric.annotation.Config
 class HomeChromeTest {
     @get:Rule val compose = createComposeRule()
     private val settings = CreatorSettings(
-        channelName = "David", profilePictureUri = "", previewThumbnailUri = "",
+        channelName = "renflare", profilePictureUri = "", previewThumbnailUri = "",
         isDarkMode = true, feedSize = 30, previewTitle = "My video", previewViews = "75K views",
         previewDuration = "12:15", previewUploadTime = "2 hours ago", previewInterval = 5,
         isOnboarded = true, placeholderTitleDefault = "", placeholderViewsDefault = "",
@@ -41,10 +41,18 @@ class HomeChromeTest {
         }
     }
 
+    @Test fun headerActionsAreVisibleWithoutOpeningAMenu() {
+        showHome()
+        compose.onNodeWithContentDescription("Toggle theme").assertIsDisplayed()
+        compose.onNodeWithContentDescription("Notifications").assertIsDisplayed()
+        compose.onNodeWithContentDescription("Search videos").assertIsDisplayed()
+        compose.onNodeWithContentDescription("More feed options").assertDoesNotExist()
+    }
+
     @Test fun barsStayPinnedWhilePullIsPartiallyReversed() {
         showHome()
         val top = compose.onNodeWithTag("home_top_bar").fetchSemanticsNode().boundsInRoot
-        val bottom = compose.onNodeWithTag("home_glass_bottom_bar").fetchSemanticsNode().boundsInRoot
+        val bottom = compose.onNodeWithTag("home_bottom_bar").fetchSemanticsNode().boundsInRoot
         val list = compose.onNodeWithTag("home_video_feed_list")
         list.performTouchInput {
             down(center)
@@ -53,24 +61,24 @@ class HomeChromeTest {
         compose.onNodeWithTag("home_refresh_indicator").assertExists()
         list.performTouchInput { moveBy(Offset(0f, -20f), delayMillis = 100) }
         assertEquals(top, compose.onNodeWithTag("home_top_bar").fetchSemanticsNode().boundsInRoot)
-        assertEquals(bottom, compose.onNodeWithTag("home_glass_bottom_bar").fetchSemanticsNode().boundsInRoot)
+        assertEquals(bottom, compose.onNodeWithTag("home_bottom_bar").fetchSemanticsNode().boundsInRoot)
         list.performTouchInput { up() }
     }
 
     @Test fun bottomBarReturnsAtFeedEndAndHidesWhenLeavingIt() {
         showHome()
-        val bottom = compose.onNodeWithTag("home_glass_bottom_bar").fetchSemanticsNode().boundsInRoot
+        val bottom = compose.onNodeWithTag("home_bottom_bar").fetchSemanticsNode().boundsInRoot
         val list = compose.onNodeWithTag("home_video_feed_list")
         list.performScrollToIndex(feed.size)
         list.performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.ScrollBy) { it(0f, 10000f) }
         compose.waitForIdle()
         val atEnd = list.fetchSemanticsNode().config[androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange]
         assertEquals(atEnd.maxValue(), atEnd.value(), 0.1f)
-        assertEquals(bottom, compose.onNodeWithTag("home_glass_bottom_bar").fetchSemanticsNode().boundsInRoot)
+        assertEquals(bottom, compose.onNodeWithTag("home_bottom_bar").fetchSemanticsNode().boundsInRoot)
         list.performTouchInput {
             swipeDown(startY = height * 0.3f, endY = height * 0.8f, durationMillis = 600)
         }
-        compose.onNodeWithTag("home_glass_bottom_bar").assertIsNotDisplayed()
+        compose.onNodeWithTag("home_bottom_bar").assertIsNotDisplayed()
     }
 
     @Test fun emptyThumbnailHasOneActionAndExploreComesBeforeAll() {

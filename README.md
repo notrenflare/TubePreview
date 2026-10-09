@@ -28,6 +28,9 @@ It does not upload videos or modify your YouTube channel.
   <a href="docs/screenshots/onboarding.png"><img src="docs/screenshots/onboarding.png" width="210" alt="TubePreview onboarding with a theme toggle" /></a>
   <a href="docs/screenshots/home-dark.png"><img src="docs/screenshots/home-dark.png" width="210" alt="Thumbnail preview in the dark feed" /></a>
   <a href="docs/screenshots/home-light.png"><img src="docs/screenshots/home-light.png" width="210" alt="Thumbnail preview in the light feed" /></a>
+</p>
+<p align="center">
+  <a href="docs/screenshots/shorts.png"><img src="docs/screenshots/shorts.png" width="210" alt="Two-column Shorts preview" /></a>
   <a href="docs/screenshots/customize.png"><img src="docs/screenshots/customize.png" width="210" alt="Channel and video customization" /></a>
 </p>
 
