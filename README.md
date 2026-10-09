@@ -6,21 +6,20 @@
 
 **Preview before you publish.**
 
-See how your thumbnails, titles, and channel branding look in a YouTube-style
-home feed on Android. No YouTube account required.
+I built TubePreview to check how a thumbnail looks in a YouTube-style feed before
+publishing. Add your image, try a title, and see it alongside sample videos.
+No YouTube sign-in needed.
 
 [**Download the latest APK →**](https://github.com/notrenflare/TubePreview-releases/releases/latest)
 
 ## What you can do
 
-- Add a thumbnail and an optional channel photo.
-- Customize the channel name, video title, views, and duration.
-- See your video alongside sample videos and adjust its placement in the feed.
-- Switch between light mode and a pure-black dark theme, including during setup.
-- Reset your preview whenever you want a fresh start.
+- See your thumbnail alongside sample videos and choose where it appears.
+- Try different titles, channel photos, names, view counts, and durations.
+- Compare your preview in light mode and a pure-black dark theme.
 
-TubePreview is an independent preview tool and is not affiliated with YouTube or Google.
-It does not upload videos or modify your YouTube channel.
+TubePreview is an independent preview tool. It isn't affiliated with YouTube or
+Google, and it doesn't upload videos or change your channel.
 
 ## Screenshots
 
@@ -47,10 +46,10 @@ bash ./gradlew :app:assembleDebug
 
 ## Privacy and security
 
-Imported images and preview settings stay in private app storage. There is no
-sign-in or backend service, and imported images are not uploaded. Sample feed photos
-load from Unsplash over HTTPS. App data is excluded from Android backup and device
-transfer; uninstalling the app removes your local preview settings.
+Your thumbnails, channel photo, and preview settings stay on your device;
+TubePreview doesn't upload them. Sample feed photos load from Unsplash over HTTPS.
+App data isn't included in Android backup or device transfer. Uninstalling the app
+removes your saved previews.
 
 See [SECURITY.md](SECURITY.md) to report a vulnerability.
 
@@ -60,8 +59,6 @@ Built with Kotlin and Jetpack Compose. See [CONTRIBUTING.md](CONTRIBUTING.md)
 for setup, validation, and release signing. Build and security results are available
 in [GitHub Actions](https://github.com/notrenflare/TubePreview/actions).
 
-Icons: [Streamline](https://streamlinehq.com) and [Material Icons](https://fonts.google.com/icons).
-Setup typography: [Nunito](https://fonts.google.com/specimen/Nunito).
-See [third-party notices](THIRD_PARTY_NOTICES.md) for asset licenses.
+Asset credits and licenses are in [third-party notices](THIRD_PARTY_NOTICES.md).
 
 Made with ❤️ by [**renflare**](https://github.com/notrenflare).
