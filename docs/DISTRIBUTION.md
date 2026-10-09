@@ -6,7 +6,7 @@
 - **Public downloads:** [notrenflare/TubePreview-releases](https://github.com/notrenflare/TubePreview-releases)
 - **Latest APK:** [Releases / Latest](https://github.com/notrenflare/TubePreview-releases/releases/latest)
 
-The public repository contains its product README, app logo, and four reviewed
+The public repository contains its product README, app logo, and five reviewed
 screenshots. Releases contain the signed APK, its SHA-256 checksum, and the public
 signing certificate fingerprint. Do not fork or mirror the source repository,
 copy its Git history, or upload internal audit documents, build reports, or keys.
@@ -92,11 +92,49 @@ existing direct-APK users from installing updates.
 5. Confirm the latest-release link, screenshots, and APK download work without
    GitHub authentication.
 
+## APK review and release identity
+
+The published 1.0 APK is frozen while its Google Play Protect review is pending.
+Do not rebuild, re-sign, replace its release assets, or move its tag. Its SHA-256 is:
+
+```text
+b5c61ac33e3c787073b254a658a927343db7f9f4dccc7b6593fc9afbd5ca3304
+```
+
+On 2026-10-09, an anonymous GitHub download matched this hash and the established
+release certificate. [VirusTotal](https://www.virustotal.com/gui/file/b5c61ac33e3c787073b254a658a927343db7f9f4dccc7b6593fc9afbd5ca3304/detection)
+reported 0 detections among 67 scanning vendors; eight additional vendors could
+not process the file type. A Google Play Protect appeal for this exact APK was
+submitted and its receipt confirmed. Submission is not approval, and a scan with
+no detections does not establish that an APK is safe.
+
+For every future app change:
+
+1. Increment the version code and use a distinct version name and release tag.
+   Preserve the package name and signing identity so existing users can update.
+2. Complete validation and signing before scanning the final APK. Record the hash,
+   source commit, certificate fingerprint, scan date, and review status privately.
+3. If Google displays a warning, review the exact affected APK through its official
+   process. Never reuse an older binary's scan or appeal as evidence for a new one.
+4. Assemble a draft GitHub release with all assets, then publish it once complete.
+   Verify that an anonymous download matches the reviewed hash.
+5. Leave published APKs and tags unchanged. Documentation and release notes may be
+   corrected without rebuilding the app.
+
+Google controls Play Protect classification. Stable signing and versioned
+releases do not guarantee exemption from warnings. Developer identity verification
+and Play Store publication are separate account processes involving the owner's
+identity, legal agreements, and potentially fees; they are not malware-review
+approvals. Do not change the signing key or package name to evade classification,
+or recommend disabling Play Protect.
+
 ## Repository protection
 
 The public download repository protects `main` against force pushes and deletion,
 including for administrators. GitHub secret scanning and push protection are
-enabled.
+enabled. Release immutability is enabled for future releases. It does not
+retroactively lock the existing 1.0 release; the freeze above is an operational
+rule for that APK.
 
 The private source repository's branch protection is unavailable on the current
 account plan. The reminder was dismissed; that does not enable enforcement.
@@ -108,3 +146,6 @@ the `android` and `secrets` checks on `main`.
 - [GitHub protected branches](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches)
 - [GitHub releases](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases)
 - [Android app signing](https://developer.android.com/studio/publish/app-signing)
+- [Google Play Protect warning guidance](https://developers.google.com/android/play-protect/warning-dev-guidance)
+- [Android developer verification](https://developer.android.com/developer-verification/guides)
+- [GitHub release immutability](https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/establish-provenance-and-integrity/prevent-release-changes)

@@ -1,5 +1,33 @@
 # Security review
 
+## Current APK review and release safeguards, 2026-10-09
+
+The owner reported that the unfamiliar-developer Play Protect warning returned
+for the feed update. The exact cause is not disclosed by Google. The current APK
+has a different hash from the earlier reviewed APK, so the earlier scan and appeal
+must not be described as clearance for this binary.
+
+- Current APK SHA-256:
+  `b5c61ac33e3c787073b254a658a927343db7f9f4dccc7b6593fc9afbd5ca3304`.
+- Anonymous public download matched the local submitted APK byte for byte.
+- Package `com.renflare.tubepreview`, version 1.0 / code 1, target SDK 37,
+  and established release certificate verified. The only platform permission is
+  INTERNET; the AndroidX signature receiver permission remains unchanged.
+- [Current VirusTotal report](https://www.virustotal.com/gui/file/b5c61ac33e3c787073b254a658a927343db7f9f4dccc7b6593fc9afbd5ca3304/detection):
+  0 detections among 67 vendors, with eight additional vendors unable to process
+  the file type. Point-in-time result on 2026-10-09, not proof of safety or Play
+  Protect approval.
+- Google Play Protect appeal submitted for the current hash. The browser displayed
+  the submission receipt. No provider decision or future exemption is claimed.
+- No app code, signing identity, APK, or release tag changed for this review.
+- Future release immutability enabled and verified on the public download
+  repository. GitHub applies it to future releases only. The existing 1.0 APK is
+  frozen operationally; future app changes require new versions and fresh evidence.
+- No Google developer account created and no payment made. Account creation
+  requires a separate owner handoff for identity, legal agreements, and the fee.
+
+See [Distribution](docs/DISTRIBUTION.md) for the revised release process.
+
 ## Feed controls and metadata follow-up, 2026-10-09
 
 The feed refresh exposes theme, notifications, and search controls without an
