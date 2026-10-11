@@ -4,7 +4,8 @@ import kotlin.random.Random
 
 data class FeedLayout(
     val placeholders: List<FeedVideo> = MockFeedProvider.getPlaceholderVideos(),
-    val previewOffset: Int = 1
+    val previewOffset: Int = 1,
+    val shorts: List<FeedShort> = MockShortFeed.initial()
 )
 
 object FeedComposer {
@@ -16,7 +17,7 @@ object FeedComposer {
         val slots = minOf(settings.previewInterval.coerceAtLeast(2), settings.feedSize.coerceAtLeast(1))
         val previousOffset = previous.previewOffset.coerceIn(0, slots - 1)
         val offset = (0 until slots).filter { it != previousOffset }.randomOrNull(random) ?: 0
-        return FeedLayout(shuffled, offset)
+        return FeedLayout(shuffled, offset, MockShortFeed.refreshed(previous.shorts, random))
     }
 
     fun compose(settings: CreatorSettings, layout: FeedLayout): List<FeedVideo> {
@@ -24,20 +25,22 @@ object FeedComposer {
         if (placeholders.isEmpty()) return emptyList()
         val interval = settings.previewInterval.coerceAtLeast(2)
         val offset = layout.previewOffset.coerceIn(0, minOf(interval, placeholders.size) - 1)
+        val preview = settings.activePreview()
         val result = mutableListOf<FeedVideo>()
         var previewCount = 0
         placeholders.forEachIndexed { index, video ->
             if (index % interval == offset) {
                 result += FeedVideo(
                     id = "user_preview_${previewCount++}",
-                    title = settings.previewTitle,
+                    title = preview.title,
                     channelName = settings.channelName,
                     channelAvatarUrl = settings.profilePictureUri,
-                    previewThumbnailUrl = settings.previewThumbnailUri,
+                    previewThumbnailUrl = preview.thumbnailUri,
                     views = settings.previewViews,
                     duration = settings.previewDuration,
                     uploadTime = settings.previewUploadTime,
-                    isUserPreview = true
+                    isUserPreview = true,
+                    avatarCrop = settings.avatarCrop
                 )
             }
             result += video.copy(

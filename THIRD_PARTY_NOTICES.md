@@ -19,6 +19,10 @@ and are available from Settings in the app.
 The preview feed also uses Material Icons provided by AndroidX Compose Material,
 licensed under [Apache License 2.0](https://github.com/androidx/androidx/blob/androidx-main/LICENSE.txt).
 
+## Sample photography
+
+The mock feed and documentation screenshots use photographs from [Unsplash](https://unsplash.com), under the [Unsplash License](https://unsplash.com/license). Feed images are requested from Unsplash over HTTPS; they are not included in the APK. Titles, channel names, and statistics in the sample feed are fictional and do not describe the photographers or their work.
+
 ## YouTube Shorts format symbol
 
 The supplied Shorts artwork identifies the YouTube Shorts preview format and is

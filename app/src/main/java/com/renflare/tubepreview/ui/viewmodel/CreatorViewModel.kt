@@ -5,6 +5,10 @@ import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.renflare.tubepreview.data.ComparisonMode
+import com.renflare.tubepreview.data.previewVariants
+import com.renflare.tubepreview.data.imageUris
+import com.renflare.tubepreview.data.AvatarCrop
 import com.renflare.tubepreview.data.CreatorSettings
 import com.renflare.tubepreview.data.FeedVideo
 import com.renflare.tubepreview.data.FeedComposer
@@ -19,6 +23,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -52,7 +57,7 @@ class CreatorViewModel(application: Application) : AndroidViewModel(application)
             previewThumbnailUri = "",
             isDarkMode = true,
             feedSize = 15,
-            previewTitle = "I Tried Something Different",
+            previewTitle = SettingsRepository.DEFAULT_PREVIEW_TITLE,
             previewViews = "75K views",
             previewDuration = "12:15",
             previewUploadTime = "2 hours ago",
@@ -76,6 +81,12 @@ class CreatorViewModel(application: Application) : AndroidViewModel(application)
         initialValue = emptyList()
     )
 
+    val shortsFeedState = feedLayout.map { it.shorts }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = feedLayout.value.shorts
+    )
+
     fun refreshFeed() {
         if (_isRefreshing.value) return
         _isRefreshing.value = true
@@ -83,7 +94,8 @@ class CreatorViewModel(application: Application) : AndroidViewModel(application)
             try {
                 // Let the standard refresh indicator acknowledge the gesture.
                 delay(450)
-                feedLayout.value = FeedComposer.reshuffle(feedLayout.value, settingsState.value)
+                repository.advanceABOption()
+                feedLayout.value = FeedComposer.reshuffle(feedLayout.value, repository.settingsFlow.first())
             } finally {
                 _isRefreshing.value = false
             }
@@ -91,7 +103,7 @@ class CreatorViewModel(application: Application) : AndroidViewModel(application)
     }
 
     // Keep the previous image until a replacement has been validated and saved.
-    private suspend fun importImage(uri: Uri, isThumbnail: Boolean) = imageMutex.withLock {
+    private suspend fun importImage(uri: Uri, isThumbnail: Boolean, optionIndex: Int = 0) = imageMutex.withLock {
         var imported: java.io.File? = null
         var saved = false
         try {
@@ -100,15 +112,15 @@ class CreatorViewModel(application: Application) : AndroidViewModel(application)
                 imageStorage.importImage(uri).also { imported = it }
             }
             if (isThumbnail) {
-                repository.updatePreviewThumbnailUri(image.absolutePath)
+                repository.updateVariantThumbnail(optionIndex, image.absolutePath)
             } else {
                 repository.updateProfilePictureUri(image.absolutePath)
             }
             saved = true
+            val current = repository.settingsFlow.first()
+            val previousPath = if (isThumbnail) previous.previewVariants()[optionIndex].thumbnailUri else previous.profilePictureUri
             withContext(Dispatchers.IO) {
-                imageStorage.deleteImportedImage(
-                    if (isThumbnail) previous.previewThumbnailUri else previous.profilePictureUri
-                )
+                if (previousPath !in current.imageUris()) imageStorage.deleteImportedImage(previousPath)
             }
         } catch (error: CancellationException) {
             throw error
@@ -138,8 +150,33 @@ class CreatorViewModel(application: Application) : AndroidViewModel(application)
         importImage(uri, isThumbnail = false)
     }
 
+    fun setAvatarCrop(profileUri: String, crop: AvatarCrop) = viewModelScope.launch {
+        imageMutex.withLock { repository.updateAvatarCrop(profileUri, crop) }
+    }
+
     fun setPreviewThumbnailFromUri(uri: Uri) = viewModelScope.launch {
         importImage(uri, isThumbnail = true)
+    }
+
+    fun setABEnabled(enabled: Boolean) = viewModelScope.launch { repository.updateABEnabled(enabled) }
+    fun setABMode(mode: ComparisonMode) = viewModelScope.launch { repository.updateABMode(mode) }
+    fun setVariantTitle(index: Int, title: String) = viewModelScope.launch { repository.updateVariantTitle(index, title) }
+    fun selectABOption(index: Int) = viewModelScope.launch { repository.selectABOption(index) }
+
+    fun setVariantThumbnail(index: Int, uri: Uri) = viewModelScope.launch {
+        require(index in 0..2)
+        importImage(uri, isThumbnail = true, optionIndex = index)
+    }
+
+    fun clearVariant(index: Int) = viewModelScope.launch {
+        imageMutex.withLock {
+            val previousPath = repository.settingsFlow.first().previewVariants()[index].thumbnailUri
+            repository.clearVariant(index)
+            val current = repository.settingsFlow.first()
+            withContext(Dispatchers.IO) {
+                if (previousPath !in current.imageUris()) imageStorage.deleteImportedImage(previousPath)
+            }
+        }
     }
 
     fun setDarkMode(isDark: Boolean) = viewModelScope.launch {
@@ -179,8 +216,7 @@ class CreatorViewModel(application: Application) : AndroidViewModel(application)
             val previous = repository.settingsFlow.first()
             repository.resetToDefaults()
             withContext(Dispatchers.IO) {
-                imageStorage.deleteImportedImage(previous.profilePictureUri)
-                imageStorage.deleteImportedImage(previous.previewThumbnailUri)
+                previous.imageUris().forEach(imageStorage::deleteImportedImage)
             }
         }
     }

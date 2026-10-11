@@ -1,8 +1,6 @@
 package com.renflare.tubepreview.ui.components
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
@@ -11,13 +9,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.BlurredEdgeTreatment
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
@@ -31,7 +25,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.renflare.tubepreview.data.FeedVideo
-import kotlin.math.max
 
 @Composable
 fun VideoThumbnail(video: FeedVideo, modifier: Modifier = Modifier) {
@@ -98,54 +91,23 @@ fun VideoThumbnail(video: FeedVideo, modifier: Modifier = Modifier) {
 
         DurationBadge(
             duration = video.duration,
-            painter = painter,
-            thumbnailSize = thumbnailSize,
             modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp)
         )
     }
 }
 
 @Composable
-private fun DurationBadge(
-    duration: String,
-    painter: Painter?,
-    thumbnailSize: IntSize,
-    modifier: Modifier = Modifier
-) {
-    val shape = CircleShape
-    Box(modifier.clip(shape).testTag("thumbnail_duration")) {
-        if (painter != null && thumbnailSize.width > 0) {
-            // Reuse the loaded painter to blur only the image region underneath this badge.
-            // No second download or full-thumbnail offscreen buffer is needed.
-            Canvas(
-                Modifier.matchParentSize().blur(6.dp, BlurredEdgeTreatment.Rectangle)
-            ) {
-                val intrinsic = painter.intrinsicSize
-                if (intrinsic.width.isFinite() && intrinsic.height.isFinite() &&
-                    intrinsic.width > 0f && intrinsic.height > 0f
-                ) {
-                    val scale = max(thumbnailSize.width / intrinsic.width, thumbnailSize.height / intrinsic.height)
-                    val imageSize = Size(intrinsic.width * scale, intrinsic.height * scale)
-                    val left = (thumbnailSize.width - imageSize.width) / 2f -
-                        (thumbnailSize.width - size.width - 8.dp.toPx())
-                    val top = (thumbnailSize.height - imageSize.height) / 2f -
-                        (thumbnailSize.height - size.height - 8.dp.toPx())
-                    translate(left, top) { with(painter) { draw(imageSize) } }
-                }
-            }
-        }
-        Box(
-            Modifier.matchParentSize()
-                .background(Color.Black.copy(alpha = 0.55f))
-                .border(0.5.dp, Color.White.copy(alpha = 0.10f), shape)
-        )
-        Text(
-            duration,
-            color = Color.White,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium,
-            fontFamily = FontFamily.SansSerif,
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-        )
-    }
+private fun DurationBadge(duration: String, modifier: Modifier = Modifier) {
+    Text(
+        duration,
+        color = Color.White,
+        fontSize = 12.sp,
+        lineHeight = 16.sp,
+        fontWeight = FontWeight.Medium,
+        fontFamily = FontFamily.SansSerif,
+        modifier = modifier.clip(CircleShape)
+            .background(Color.Black.copy(alpha = 0.65f))
+            .testTag("thumbnail_duration")
+            .padding(horizontal = 6.dp, vertical = 2.dp)
+    )
 }

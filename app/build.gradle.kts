@@ -12,25 +12,25 @@ android {
     applicationId = "com.renflare.tubepreview"
     minSdk = 24
     targetSdk = 37
-    versionCode = 1
-    versionName = "1.0"
+    versionCode = 2
+    versionName = "1.1"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 
+  val releaseKeystorePath = System.getenv("KEYSTORE_PATH")
   signingConfigs {
-    create("release") {
-      val keystorePath = System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
-      storeFile = file(keystorePath)
-      storePassword = System.getenv("STORE_PASSWORD")
-      keyAlias = "upload"
-      keyPassword = System.getenv("KEY_PASSWORD")
-    }
-    create("debugConfig") {
-      storeFile = file("${rootDir}/debug.keystore")
-      storePassword = "android"
-      keyAlias = "androiddebugkey"
-      keyPassword = "android"
+    if (!releaseKeystorePath.isNullOrBlank()) {
+      create("release") {
+        storeFile = file(releaseKeystorePath)
+        storePassword = requireNotNull(System.getenv("STORE_PASSWORD")) {
+          "STORE_PASSWORD is required when KEYSTORE_PATH is set"
+        }
+        keyAlias = "upload"
+        keyPassword = requireNotNull(System.getenv("KEY_PASSWORD")) {
+          "KEY_PASSWORD is required when KEYSTORE_PATH is set"
+        }
+      }
     }
   }
 
@@ -39,17 +39,8 @@ android {
       isCrunchPngs = false
       isMinifyEnabled = false
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-      val keystorePath = System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
-      if (file(keystorePath).exists()) {
+      if (!releaseKeystorePath.isNullOrBlank()) {
         signingConfig = signingConfigs.getByName("release")
-      }
-    }
-    debug {
-      // The custom debugConfig requires a 'debug.keystore' file in the root directory.
-      // If it's missing, we default to the standard Android debug keystore.
-      val customDebugKeystore = file("${rootDir}/debug.keystore")
-      if (customDebugKeystore.exists()) {
-        signingConfig = signingConfigs.getByName("debugConfig")
       }
     }
   }

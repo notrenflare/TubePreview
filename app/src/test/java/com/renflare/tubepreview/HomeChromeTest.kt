@@ -1,6 +1,8 @@
 package com.renflare.tubepreview
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import com.renflare.tubepreview.data.CreatorSettings
@@ -14,6 +16,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
+@OptIn(ExperimentalTestApi::class)
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [36])
 class HomeChromeTest {
@@ -33,17 +36,65 @@ class HomeChromeTest {
         )
     }
 
-    private fun showHome() {
+    private fun showHome(refreshing: Boolean = false, onRefresh: () -> Unit = {}, onSettings: () -> Unit = {}) {
         compose.setContent {
             TubePreviewTheme(darkTheme = true) {
-                HomeScreen(settings, feed, false, {}, {}, {})
+                HomeScreen(settings, feed, refreshing, onRefresh, onSettings, {})
             }
         }
     }
 
+    @Test fun keyboardCanFocusAndActivateHeaderAndAvatarIndependently() {
+        var settingsOpened = 0
+        showHome(onSettings = { settingsOpened++ })
+        val header = compose.onNodeWithTag("home_preview_settings")
+        header.performSemanticsAction(SemanticsActions.RequestFocus)
+        header.assertIsFocused()
+        header.performKeyInput { pressKey(Key.Enter) }
+        assertEquals(1, settingsOpened)
+        val avatar = compose.onAllNodesWithContentDescription("Go to channel Creator").onFirst()
+        avatar.performSemanticsAction(SemanticsActions.RequestFocus)
+        avatar.assertIsFocused()
+        avatar.performKeyInput { pressKey(Key.Enter) }
+        assertEquals(1, settingsOpened)
+    }
+
+    @Test fun shortPullDoesNotRefreshAndFullPullRequestsOneRefresh() {
+        var refreshes = 0
+        showHome(onRefresh = { refreshes++ })
+        val list = compose.onNodeWithTag("home_video_feed_list")
+        list.performTouchInput {
+            down(center)
+            moveBy(Offset(0f, 80f), delayMillis = 150)
+            up()
+        }
+        compose.waitForIdle()
+        assertEquals(0, refreshes)
+        compose.onNodeWithTag("home_refresh_indicator").assertDoesNotExist()
+        list.performTouchInput {
+            down(center)
+            moveBy(Offset(0f, 500f), delayMillis = 250)
+            up()
+        }
+        compose.waitForIdle()
+        assertEquals(1, refreshes)
+    }
+
+    @Test fun feedRemainsScrollableDuringRefresh() {
+        showHome(refreshing = true)
+        compose.onNodeWithContentDescription("Refreshing feed").assertExists()
+        val list = compose.onNodeWithTag("home_video_feed_list")
+        list.performTouchInput { swipeUp(durationMillis = 400) }
+        val range = list.fetchSemanticsNode().config[
+            androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange
+        ]
+        org.junit.Assert.assertTrue(range.value() > 0f)
+    }
+
     @Test fun headerActionsAreVisibleWithoutOpeningAMenu() {
         showHome()
-        compose.onNodeWithContentDescription("Toggle theme").assertIsDisplayed()
+        compose.onNodeWithContentDescription("Your preview settings").assertIsDisplayed()
+        compose.onNodeWithContentDescription("Toggle theme").assertDoesNotExist()
         compose.onNodeWithContentDescription("Notifications").assertIsDisplayed()
         compose.onNodeWithContentDescription("Search videos").assertIsDisplayed()
         compose.onNodeWithContentDescription("More feed options").assertDoesNotExist()
@@ -63,6 +114,27 @@ class HomeChromeTest {
         assertEquals(top, compose.onNodeWithTag("home_top_bar").fetchSemanticsNode().boundsInRoot)
         assertEquals(bottom, compose.onNodeWithTag("home_bottom_bar").fetchSemanticsNode().boundsInRoot)
         list.performTouchInput { up() }
+    }
+
+    @Test fun barsTrackTheDragWithoutAnAnimationLag() {
+        showHome()
+        val top = compose.onNodeWithTag("home_top_bar").getUnclippedBoundsInRoot()
+        val bottom = compose.onNodeWithTag("home_bottom_bar").getUnclippedBoundsInRoot()
+        compose.mainClock.autoAdvance = false
+        val list = compose.onNodeWithTag("home_video_feed_list")
+        list.performTouchInput {
+            down(center)
+            moveBy(Offset(0f, -80f), delayMillis = 16)
+        }
+        compose.mainClock.advanceTimeByFrame()
+        val movedTop = compose.onNodeWithTag("home_top_bar").getUnclippedBoundsInRoot()
+        val movedBottom = compose.onNodeWithTag("home_bottom_bar").getUnclippedBoundsInRoot()
+        val travel = (top.top - movedTop.top).value
+        org.junit.Assert.assertTrue("Drag must scroll the feed", travel > 5f)
+        assertEquals("Chrome should follow the same consumed drag immediately",
+            travel, (movedBottom.top - bottom.top).value, 1f)
+        list.performTouchInput { up() }
+        compose.mainClock.autoAdvance = true
     }
 
     @Test fun bottomBarReturnsAtFeedEndAndHidesWhenLeavingIt() {
@@ -88,6 +160,7 @@ class HomeChromeTest {
         compose.onNodeWithText("YOUR PREVIEW").assertDoesNotExist()
         val explore = compose.onNodeWithContentDescription("Explore").fetchSemanticsNode().boundsInRoot
         val all = compose.onNodeWithText("All").fetchSemanticsNode().boundsInRoot
-        org.junit.Assert.assertTrue(explore.left < all.left)
+        val custom = compose.onNodeWithText("Your custom feed").fetchSemanticsNode().boundsInRoot
+        org.junit.Assert.assertTrue(explore.left < custom.left && custom.left < all.left)
     }
 }

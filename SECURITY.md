@@ -1,53 +1,23 @@
-# Security
+# Security policy
 
-TubePreview previews thumbnails locally. It has no sign-in, backend API, or embedded API keys.
-Sample feed photos are fetched from images.unsplash.com over HTTPS. Imported photos and
-preview settings stay in private app storage and are excluded from Android backup and
-device transfer. Clearing app data or uninstalling the app removes those local settings.
+## Supported versions
+
+Security fixes are applied to the latest release. Update before reporting an issue that may already be resolved.
 
 ## Reporting a vulnerability
 
-This repository is private. Collaborators can report a vulnerability in a repository
-issue visible only to authorized collaborators. Avoid including raw credentials or
-private photos. If you do not have repository access, contact the maintainer through
-an existing private channel.
+Use [GitHub private vulnerability reporting](https://github.com/notrenflare/TubePreview/security/advisories/new) to report a suspected vulnerability. Include affected version, reproduction steps, impact, and a minimal example where possible.
 
-If the repository becomes public, enable GitHub private vulnerability reporting and
-use Security → Report a vulnerability. Never publish exploit details in a public issue.
+Do not post credentials, private images, or exploit details in public issues. Reports are reviewed by the maintainer; no response-time guarantee is offered.
 
-## Repository maintenance
+## Security model
 
-- Revocation of the retired key from the removed .env configuration remains unverified.
-  Earlier generated builds contained it; deleting the file does not revoke the key.
-  Its Google Cloud project has not been conclusively identified. The current app and
-  reviewed Git history do not contain that credential; see SECURITY_AUDIT.md.
-- Publish with Git so .gitignore excludes local settings, build output, and signing keys.
-  Do not upload a ZIP of the entire workspace.
-- Enable Dependabot alerts and repository security features supported by the account
-  and visibility. Private vulnerability reporting applies to public repositories;
-  private secret scanning and enforced branch checks have plan restrictions.
-  Review the CI checks before merging even where enforcement is unavailable.
-- Keep release signing keys outside the repository. KEYSTORE_PATH, STORE_PASSWORD,
-  and KEY_PASSWORD are environment variables used only for signing. Builds without a
-  keystore produce an unsigned release; never distribute a debug build as a release.
-- Future authenticated services must keep privileged credentials on a server. An APK
-  cannot keep a shared API secret confidential, even with obfuscation.
+TubePreview has no sign-in, backend API, or embedded API keys. Imported images and preview settings remain in private app storage and are excluded from Android backup and device transfer.
 
-## Repeatable local checks
+- Photo selection uses Android's system picker without broad storage permissions.
+- Imports are bounded by actual stream size and decoded dimensions.
+- Remote sample photos load from `images.unsplash.com` over HTTPS with standard TLS validation.
+- Release signing material is kept outside Git. Published APKs include a checksum and certificate fingerprint.
+- CI runs unit tests, lint, dependency advisory checks, and a redacted Git-history secret scan.
 
-Use JDK 21, the Android SDK, Node 22 or newer, and Gitleaks 8.30.1 or newer.
-
-```sh
-bash ./gradlew :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease :app:lintDebug :app:lintRelease :app:auditDependencies --init-script scripts/security-audit.init.gradle --no-configuration-cache
-node scripts/audit-dependencies.mjs
-gitleaks git --redact=100 --log-opts="--all" .
-```
-
-The OSV check uses exact resolved Maven versions across app, unit test,
-instrumentation test, and build-plugin dependencies, writes reports to build/security,
-and exits unsuccessfully for known vulnerabilities or an incomplete scan.
-CI scans Git history, pins action revisions and the Gitleaks download checksum,
-and has read-only repository permissions. Dependabot checks for updates weekly.
-
-No automated scan proves the absence of exploitable bugs. See SECURITY_AUDIT.md for
-the dated review, evidence, and remaining limitations.
+Automated checks reduce risk; they do not prove the absence of vulnerabilities. See [privacy](docs/PRIVACY.md) and [distribution](docs/DISTRIBUTION.md) for further details.

@@ -3,6 +3,9 @@ package com.renflare.tubepreview.ui.screens
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.indication
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.material3.ripple
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -11,7 +14,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +22,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -34,11 +37,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.renflare.tubepreview.ui.components.BrandLogo
+import com.renflare.tubepreview.ui.components.FeedStatusBarProtection
+import com.renflare.tubepreview.ui.components.FeedInteractions
+import com.renflare.tubepreview.ui.components.FeedIconButton
+import com.renflare.tubepreview.ui.components.feedFeedbackColor
+import com.renflare.tubepreview.ui.components.feedBackdrop
+import com.renflare.tubepreview.ui.components.feedBackdropSource
+import com.renflare.tubepreview.ui.components.rememberFeedBackdrop
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
@@ -46,10 +57,14 @@ import androidx.compose.ui.semantics.semantics
 import com.renflare.tubepreview.ui.components.ShortsIcon
 import androidx.compose.ui.res.vectorResource
 import com.renflare.tubepreview.R
+import com.renflare.tubepreview.data.activePreviewIndex
+import com.renflare.tubepreview.data.readyPreviewIndices
 import com.renflare.tubepreview.data.CreatorSettings
 import com.renflare.tubepreview.data.FeedVideo
+import com.renflare.tubepreview.data.FeedShort
+import com.renflare.tubepreview.data.MockShortFeed
+import com.renflare.tubepreview.ui.components.AvatarPhoto
 import com.renflare.tubepreview.ui.components.VideoCard
-import com.renflare.tubepreview.ui.theme.BrandRed
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -62,7 +77,9 @@ fun HomeScreen(
     onRefresh: () -> Unit,
     onNavigateToSettings: () -> Unit,
     onToggleTheme: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    shortsFeed: List<FeedShort> = MockShortFeed.initial(),
+    onSelectVariant: (Int) -> Unit = {}
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -88,9 +105,6 @@ fun HomeScreen(
     val refreshing = rememberUpdatedState(isRefreshing)
     val hasFeed = rememberUpdatedState(videoFeed.isNotEmpty())
     var leavingFeedEnd by remember { mutableStateOf(false) }
-    val animatedBottomOffset by animateFloatAsState(
-        bottomBarOffsetHeightPx, tween(120), label = "bottomBarOffset"
-    )
     LaunchedEffect(listState) {
         snapshotFlow { listState.canScrollForward to listState.canScrollBackward }.collect { (forward, backward) ->
             if (!forward && hasFeed.value && !leavingFeedEnd) {
@@ -145,294 +159,362 @@ fun HomeScreen(
         }
     }
 
-    Scaffold(
-        modifier = modifier
-            .fillMaxSize(),
-        topBar = {
-            Column(
-                modifier = Modifier
-                    .onSizeChanged { topBarHeightPx = it.height.toFloat() }
-                    .offset { IntOffset(x = 0, y = if (isRefreshing || pullToRefreshState.distanceFraction > 0f) 0 else topBarOffsetHeightPx.roundToInt()) }
-                    .testTag("home_top_bar")
-                    .background(MaterialTheme.colorScheme.background)
-            ) {
-                BoxWithConstraints(Modifier.statusBarsPadding().fillMaxWidth()) {
-                    val compactHeader = maxWidth < 380.dp
-                    val wordmarkSize = when {
-                        maxWidth < 340.dp -> 18.sp
-                        compactHeader -> 20.sp
-                        else -> 22.sp
-                    }
-                    Row(
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)
-                            .padding(start = 12.dp, end = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            BrandLogo(
-                                modifier = Modifier.size(if (compactHeader) 28.dp else 32.dp)
-                            )
-                            Spacer(Modifier.width(6.dp))
-                            Text(
-                                text = "TubePreview",
-                                fontSize = wordmarkSize,
-                                fontFamily = FontFamily.SansSerif,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = (-0.5).sp,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                color = MaterialTheme.colorScheme.onBackground
-                            )
-                        }
-                        FeedIconButton(
-                            icon = if (settings.isDarkMode) Icons.Outlined.LightMode else Icons.Outlined.DarkMode,
-                            contentDescription = "Toggle theme",
-                            onClick = { onToggleTheme(!settings.isDarkMode) },
-                            modifier = Modifier.testTag("home_theme_toggle")
-                        )
-                        FeedIconButton(
-                            icon = Icons.Outlined.NotificationsNone,
-                            contentDescription = "Notifications",
-                            onClick = { scope.launch { snackbarHostState.showSnackbar("No notifications yet") } },
-                            modifier = Modifier.testTag("home_notifications")
-                        )
-                        FeedIconButton(
-                            icon = Icons.Outlined.Search,
-                            contentDescription = "Search videos",
-                            onClick = { scope.launch { snackbarHostState.showSnackbar("Search is not available in the preview feed") } },
-                            modifier = Modifier.testTag("home_search")
-                        )
-                    }
-                }
-
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(horizontal = 12.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    item(key = "explore") {
-                        FeedCategoryChip(
-                            selected = selectedCategory == "Explore",
-                            onClick = { selectedCategory = "Explore" },
-                            modifier = Modifier.testTag("home_explore_tab"),
-                            icon = ImageVector.vectorResource(R.drawable.feed_explore)
-                        )
-                    }
-                    items(categories) { category ->
-                        FeedCategoryChip(
-                            selected = selectedCategory == category,
-                            onClick = { selectedCategory = category },
-                            text = category
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.height(4.dp))
-            }
-        },
-        bottomBar = {
-            Column(
-                modifier = Modifier
-                    .onSizeChanged { bottomBarHeightPx = it.height.toFloat() }
-                    .offset { IntOffset(x = 0, y = if (isRefreshing || pullToRefreshState.distanceFraction > 0f) 0 else animatedBottomOffset.roundToInt()) }
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.background)
-                    .windowInsetsPadding(WindowInsets.navigationBars)
-                    .testTag("home_bottom_bar")
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().height(64.dp),
-                    horizontalArrangement = Arrangement.SpaceAround,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    val navItems = listOf(
-                        "Home" to Icons.Filled.Home,
-                        "Shorts" to Icons.Outlined.SmartDisplay,
-                        "Create" to Icons.Outlined.Add,
-                        "Subscriptions" to Icons.Outlined.Subscriptions,
-                        "You" to Icons.Outlined.AccountCircle
-                    )
-                    navItems.forEach { (title, icon) ->
-                        val isCreate = title == "Create"
-                        val isYou = title == "You"
+    val backdrop = rememberFeedBackdrop()
+    // Match the preview canvas without changing the branding/settings palette.
+    val feedBackground = if (settings.isDarkMode) Color(0xFF0F0F0F) else Color.White
+    MaterialTheme(
+        colorScheme = MaterialTheme.colorScheme.copy(
+            background = feedBackground,
+            surface = feedBackground
+        )
+    ) {
+        FeedInteractions {
+            Box(modifier.fillMaxSize()) {
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    topBar = {
                         Column(
                             modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
-                                .padding(vertical = 4.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .clickable(role = Role.Tab) {
-                                    when {
-                                        isYou || isCreate -> onNavigateToSettings()
-                                        title != "Home" -> scope.launch {
-                                            snackbarHostState.showSnackbar("$title is a preview section")
-                                        }
-                                    }
-                                }
-                                .semantics { selected = title == "Home" }
-                                .then(if (isYou) Modifier.testTag("home_settings_button") else Modifier),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
+                                .onSizeChanged { topBarHeightPx = it.height.toFloat() }
+                                .offset { IntOffset(x = 0, y = if (isRefreshing || pullToRefreshState.distanceFraction > 0f) 0 else topBarOffsetHeightPx.roundToInt()) }
+                                .testTag("home_top_bar")
+                                .background(MaterialTheme.colorScheme.background)
                         ) {
-                            if (isCreate) {
-                                Box(
-                                    modifier = Modifier.size(40.dp)
-                                        .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape),
-                                    contentAlignment = Alignment.Center
+                            BoxWithConstraints(Modifier.statusBarsPadding().fillMaxWidth()) {
+                                val compactHeader = maxWidth < 340.dp
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().height(48.dp)
+                                        .padding(start = 12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Icon(icon, "Edit your preview", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(24.dp))
-                                }
-                            } else {
-                                if (isYou && settings.profilePictureUri.isNotEmpty()) {
-                                    AsyncImage(
-                                        model = settings.profilePictureUri,
-                                        contentDescription = "Your profile",
-                                        contentScale = ContentScale.Crop,
-                                        modifier = Modifier.size(24.dp).clip(CircleShape)
-                                    )
-                                } else if (title == "Shorts") {
-                                    ShortsIcon(outlined = true, modifier = Modifier.size(24.dp))
-                                } else {
-                                    Icon(
-                                        icon,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onBackground,
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                }
-                                Spacer(Modifier.height(3.dp))
-                                Text(
-                                    text = if (title == "Subscriptions" && LocalDensity.current.fontScale > 1.15f) "Subs" else title,
-                                    modifier = Modifier.semantics { if (title == "Subscriptions") contentDescription = title },
-                                    color = MaterialTheme.colorScheme.onBackground,
-                                    fontFamily = FontFamily.SansSerif,
-                                    fontSize = 11.sp,
-                                    lineHeight = 12.sp,
-                                    fontWeight = if (title == "Home") FontWeight.Medium else FontWeight.Normal,
-                                    maxLines = 1,
-                                    softWrap = false,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { innerPadding ->
-        PullToRefreshBox(
-            isRefreshing = isRefreshing,
-            onRefresh = {
-                refreshRequested = true
-                onRefresh()
-            },
-            state = pullToRefreshState,
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
-            indicator = {
-                if (isRefreshing || pullToRefreshState.distanceFraction > 0f) {
-                    FeedRefreshIndicator(
-                        isRefreshing = isRefreshing,
-                        progress = pullToRefreshState.distanceFraction,
-                        modifier = Modifier
-                            .align(Alignment.TopCenter)
-                            .padding(top = innerPadding.calculateTopPadding() + 72.dp)
-                    )
-                }
-            }
-        ) {
-            if (videoFeed.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = BrandRed)
-                }
-            } else {
-                LazyColumn(
-                    state = listState,
-                    userScrollEnabled = !isRefreshing,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .nestedScroll(nestedScrollConnection)
-                        .testTag("home_video_feed_list"),
-                    contentPadding = innerPadding,
-                    verticalArrangement = Arrangement.spacedBy(0.dp) // seamless vertical card flow matching YouTube!
-                ) {
-                    // Keep the Shorts shelf near the top while refresh varies the preview position.
-                    val topVideos = videoFeed.take(2)
-                    items(
-                        items = topVideos,
-                        key = { video -> "top_${video.id}" }
-                    ) { video ->
-                        VideoCard(
-                            video = video,
-                            onVideoClick = {
-                                if (video.isUserPreview) {
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar("Opening Settings to edit your preview...")
-                                    }
-                                    onNavigateToSettings()
-                                } else {
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar(
-                                            message = "Demo item: '${video.title}'",
-                                            withDismissAction = true
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        BrandLogo(modifier = Modifier.size(28.dp))
+                                        Spacer(Modifier.width(4.dp))
+                                        Text(
+                                            text = "TubePreview",
+                                            fontSize = if (compactHeader) 18.sp else 20.sp,
+                                            fontFamily = remember {
+                                                FontFamily(android.graphics.Typeface.create("sans-serif-condensed", android.graphics.Typeface.BOLD))
+                                            },
+                                            fontWeight = FontWeight.Bold,
+                                            letterSpacing = (-0.5).sp,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                            color = MaterialTheme.colorScheme.onBackground
                                         )
                                     }
+                                    FeedIconButton(
+                                        icon = ImageVector.vectorResource(R.drawable.feed_chats),
+                                        contentDescription = "Your preview settings",
+                                        onClick = onNavigateToSettings,
+                                        modifier = Modifier.testTag("home_preview_settings")
+                                    )
+                                    FeedIconButton(
+                                        icon = ImageVector.vectorResource(R.drawable.feed_notifications),
+                                        contentDescription = "Notifications",
+                                        onClick = { scope.launch { snackbarHostState.showSnackbar("No notifications yet") } },
+                                        modifier = Modifier.testTag("home_notifications")
+                                    )
+                                    FeedIconButton(
+                                        icon = ImageVector.vectorResource(R.drawable.feed_search),
+                                        contentDescription = "Search videos",
+                                        onClick = { scope.launch { snackbarHostState.showSnackbar("Search is not available in the preview feed") } },
+                                        modifier = Modifier.testTag("home_search")
+                                    )
                                 }
                             }
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                    }
 
-                    // Two-column Shorts shelf.
-                    item {
-                        ShortsShelfView(
-                            onShortClick = { shortTitle ->
-                                scope.launch {
-                                    snackbarHostState.showSnackbar("Opening Short: $shortTitle")
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                contentPadding = PaddingValues(horizontal = 12.dp),
+                                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                            ) {
+                                item(key = "explore") {
+                                    FeedCategoryChip(
+                                        selected = selectedCategory == "Explore",
+                                        onClick = { selectedCategory = "Explore" },
+                                        modifier = Modifier.testTag("home_explore_tab"),
+                                        icon = ImageVector.vectorResource(R.drawable.feed_explore)
+                                    )
+                                }
+                                item(key = "explore_gap") { Spacer(Modifier.width(0.dp)) }
+                                item(key = "custom_feed") {
+                                    FeedCategoryChip(
+                                        selected = false,
+                                        onClick = onNavigateToSettings,
+                                        text = "Your custom feed",
+                                        leadingIcon = ImageVector.vectorResource(R.drawable.feed_custom),
+                                        modifier = Modifier.testTag("home_custom_feed")
+                                    )
+                                }
+                                items(categories) { category ->
+                                    FeedCategoryChip(
+                                        selected = selectedCategory == category,
+                                        onClick = { selectedCategory = category },
+                                        text = category
+                                    )
                                 }
                             }
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                    }
-
-                    // 3. The remaining items of the stream (which includes user's trailing previews)
-                    if (videoFeed.size > 2) {
-                        val trailingVideos = videoFeed.drop(2)
-                        items(
-                            items = trailingVideos,
-                            key = { video -> "trail_${video.id}" }
-                        ) { video ->
-                            VideoCard(
-                                video = video,
-                                onVideoClick = {
-                                    if (video.isUserPreview) {
-                                        scope.launch {
-                                            snackbarHostState.showSnackbar("Opening Settings to edit your preview...")
+                        }
+                    },
+                    bottomBar = {
+                        Column(
+                            modifier = Modifier
+                                .onSizeChanged { bottomBarHeightPx = it.height.toFloat() }
+                                .offset { IntOffset(x = 0, y = if (isRefreshing || pullToRefreshState.distanceFraction > 0f) 0 else bottomBarOffsetHeightPx.roundToInt()) }
+                                .fillMaxWidth()
+                                .clipToBounds()
+                                .feedBackdrop(
+                                    backdrop,
+                                    MaterialTheme.colorScheme.background.copy(alpha = if (settings.isDarkMode) 0.72f else 0.82f)
+                                )
+                                .windowInsetsPadding(WindowInsets.navigationBars)
+                                .testTag("home_bottom_bar")
+                        ) {
+                            if (settings.abPreview.enabled) {
+                                val ready = settings.readyPreviewIndices()
+                                Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                                    verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        if (ready.size >= 2) "A/B · ${'A' + settings.activePreviewIndex()}" else "Add options",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        modifier = Modifier.weight(1f).semantics { liveRegion = LiveRegionMode.Polite }.testTag("home_ab_status")
+                                    )
+                                    (0..2).forEach { index ->
+                                        TextButton(
+                                            onClick = { onSelectVariant(index) }, enabled = index in ready,
+                                            colors = ButtonDefaults.textButtonColors(
+                                                contentColor = MaterialTheme.colorScheme.onSurface,
+                                                containerColor = if (settings.activePreviewIndex() == index && index in ready)
+                                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f) else Color.Transparent
+                                            ),
+                                            modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp)
+                                                .semantics {
+                                                    selected = settings.activePreviewIndex() == index && index in ready
+                                                    contentDescription = "Preview option ${'A' + index}"
+                                                }
+                                                .testTag("home_ab_${index}")
+                                        ) {
+                                            Text(('A' + index).toString(),
+                                                fontWeight = if (settings.activePreviewIndex() == index) FontWeight.Bold else FontWeight.Normal)
                                         }
-                                        onNavigateToSettings()
-                                    } else {
-                                        scope.launch {
-                                            snackbarHostState.showSnackbar(
-                                                message = "Demo item: '${video.title}'",
-                                                withDismissAction = true
+                                    }
+                                    FeedIconButton(Icons.Outlined.Edit, "Edit A/B options", onNavigateToSettings)
+                                }
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                                horizontalArrangement = Arrangement.SpaceAround,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                val navItems = listOf(
+                                    "Home" to ImageVector.vectorResource(R.drawable.feed_home),
+                                    "Shorts" to Icons.Outlined.SmartDisplay,
+                                    "Create" to ImageVector.vectorResource(R.drawable.feed_add),
+                                    "Subscriptions" to ImageVector.vectorResource(R.drawable.feed_subscriptions),
+                                    "You" to Icons.Outlined.AccountCircle
+                                )
+                                navItems.forEach { (title, icon) ->
+                                    val isCreate = title == "Create"
+                                    val isYou = title == "You"
+                                    Column(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .heightIn(min = 48.dp)
+                                            .padding(vertical = 4.dp)
+                                            .clickable(
+                                                role = Role.Tab,
+                                                interactionSource = remember { MutableInteractionSource() },
+                                                indication = ripple(bounded = false, radius = 36.dp, color = feedFeedbackColor())
+                                            ) {
+                                                when {
+                                                    isYou || isCreate -> onNavigateToSettings()
+                                                    title == "Home" -> scope.launch { listState.animateScrollToItem(0) }
+                                                    title != "Home" -> scope.launch {
+                                                        snackbarHostState.showSnackbar("$title is a preview section")
+                                                    }
+                                                }
+                                            }
+                                            .semantics { selected = title == "Home" }
+                                            .then(if (isYou) Modifier.testTag("home_settings_button") else Modifier),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.Center
+                                    ) {
+                                        if (isCreate) {
+                                            Box(
+                                                modifier = Modifier.size(36.dp)
+                                                    .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Icon(icon, "Edit your preview", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(24.dp))
+                                            }
+                                        } else {
+                                            if (isYou && settings.profilePictureUri.isNotEmpty()) {
+                                                AvatarPhoto(
+                                                    model = settings.profilePictureUri,
+                                                    crop = settings.avatarCrop,
+                                                    contentDescription = "Your profile",
+                                                    modifier = Modifier.size(24.dp).clip(CircleShape)
+                                                )
+                                            } else if (title == "Shorts") {
+                                                ShortsIcon(outlined = true, modifier = Modifier.size(24.dp))
+                                            } else {
+                                                Icon(
+                                                    icon,
+                                                    contentDescription = null,
+                                                    tint = MaterialTheme.colorScheme.onBackground,
+                                                    modifier = Modifier.size(24.dp)
+                                                )
+                                            }
+                                            Spacer(Modifier.height(2.dp))
+                                            Text(
+                                                text = title,
+                                                modifier = Modifier.semantics { if (title == "Subscriptions") contentDescription = title },
+                                                color = MaterialTheme.colorScheme.onBackground,
+                                                fontFamily = FontFamily.SansSerif,
+                                                fontSize = with(LocalDensity.current) { 10.dp.toSp() },
+                                                lineHeight = with(LocalDensity.current) { 11.5.dp.toSp() },
+                                                fontWeight = FontWeight.Normal,
+                                                maxLines = 1,
+                                                softWrap = false,
+                                                overflow = TextOverflow.Ellipsis
                                             )
                                         }
                                     }
                                 }
-                            )
-                            Spacer(modifier = Modifier.height(12.dp))
+                            }
+                        }
+                    },
+                    snackbarHost = { SnackbarHost(snackbarHostState) }
+                ) { innerPadding ->
+                    FeedPullToRefreshBox(
+                        isRefreshing = isRefreshing,
+                        onRefresh = {
+                            refreshRequested = true
+                            onRefresh()
+                        },
+                        state = pullToRefreshState,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .feedBackdropSource(backdrop, listState)
+                            .background(MaterialTheme.colorScheme.background),
+                        indicator = {
+                            if (isRefreshing || pullToRefreshState.distanceFraction > 0f) {
+                                FeedRefreshIndicator(
+                                    isRefreshing = isRefreshing,
+                                    progress = pullToRefreshState.distanceFraction,
+                                    modifier = Modifier
+                                        .align(Alignment.TopCenter)
+                                        .padding(top = innerPadding.calculateTopPadding())
+                                )
+                            }
+                        }
+                    ) {
+                        if (videoFeed.isEmpty()) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(innerPadding),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                    strokeWidth = 2.dp, modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        } else {
+                            LazyColumn(
+                                state = listState,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .nestedScroll(nestedScrollConnection)
+                                    .testTag("home_video_feed_list"),
+                                contentPadding = innerPadding,
+                                verticalArrangement = Arrangement.spacedBy(0.dp)
+                            ) {
+                                // Keep the opening viewport focused on long-form previews.
+                                val topVideos = videoFeed.take(6)
+                                items(
+                                    items = topVideos,
+                                    key = { video -> "top_${video.id}" }
+                                ) { video ->
+                                    VideoCard(
+                                        video = video,
+                                        onVideoClick = {
+                                            if (video.isUserPreview) {
+                                                scope.launch {
+                                                    snackbarHostState.showSnackbar("Opening Settings to edit your preview...")
+                                                }
+                                                onNavigateToSettings()
+                                            } else {
+                                                scope.launch {
+                                                    snackbarHostState.showSnackbar(
+                                                        message = "Demo item: '${video.title}'",
+                                                        withDismissAction = true
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                }
+
+                                // Two-column Shorts shelf.
+                                item {
+                                    ShortsShelfView(
+                                        shorts = shortsFeed,
+                                        onShortClick = { shortTitle ->
+                                            scope.launch {
+                                                snackbarHostState.showSnackbar("Opening Short: $shortTitle")
+                                            }
+                                        }
+                                    )
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                }
+
+                                // 3. The remaining items of the stream (which includes user's trailing previews)
+                                if (videoFeed.size > 6) {
+                                    val trailingVideos = videoFeed.drop(6)
+                                    items(
+                                        items = trailingVideos,
+                                        key = { video -> "trail_${video.id}" }
+                                    ) { video ->
+                                        VideoCard(
+                                            video = video,
+                                            onVideoClick = {
+                                                if (video.isUserPreview) {
+                                                    scope.launch {
+                                                        snackbarHostState.showSnackbar("Opening Settings to edit your preview...")
+                                                    }
+                                                    onNavigateToSettings()
+                                                } else {
+                                                    scope.launch {
+                                                        snackbarHostState.showSnackbar(
+                                                            message = "Demo item: '${video.title}'",
+                                                            withDismissAction = true
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        )
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                    }
+                                }
+                            }
                         }
                     }
                 }
+                FeedStatusBarProtection(
+                    color = feedBackground,
+                    hiddenFraction = {
+                        if (isRefreshing || pullToRefreshState.distanceFraction > 0f) 0f
+                        else -topBarOffsetHeightPx / topBarHeightPx.coerceAtLeast(1f)
+                    },
+                    modifier = Modifier.align(Alignment.TopCenter)
+                )
             }
         }
     }
@@ -444,85 +526,85 @@ private fun FeedCategoryChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     text: String? = null,
-    icon: ImageVector? = null
+    icon: ImageVector? = null,
+    leadingIcon: ImageVector? = null
 ) {
     val colors = MaterialTheme.colorScheme
+    val interactions = remember { MutableInteractionSource() }
     Box(
-        modifier.heightIn(min = 48.dp).clip(RoundedCornerShape(8.dp))
-            .clickable(role = Role.Tab, onClick = onClick)
+        modifier.heightIn(min = 48.dp)
+            .clickable(interactionSource = interactions, indication = null, role = Role.Tab, onClick = onClick)
             .semantics { this.selected = selected },
         contentAlignment = Alignment.Center
     ) {
-        Box(
-            Modifier.clip(RoundedCornerShape(8.dp))
-                .background(if (selected) colors.onSurface else colors.surfaceVariant)
+        Row(
+            Modifier.background(
+                if (selected) colors.onSurface else colors.surfaceVariant, RoundedCornerShape(8.dp)
+            ).indication(interactions, ripple(color = if (selected) colors.surface else feedFeedbackColor()))
                 .then(
                     if (icon != null) Modifier.size(width = 42.dp, height = 32.dp)
-                    else Modifier.padding(horizontal = 12.dp, vertical = 7.dp)
+                    else Modifier.heightIn(min = 32.dp)
+                        .padding(start = if (leadingIcon != null) 10.dp else 12.dp, end = 12.dp)
                 ),
-            contentAlignment = Alignment.Center
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
             if (icon != null) {
-                Icon(icon, "Explore", tint = if (selected) colors.surface else colors.onSurface,
-                    modifier = Modifier.size(24.dp))
+                Icon(icon, "Explore", tint = if (selected) colors.surface else colors.onSurface, modifier = Modifier.size(24.dp))
             } else {
-                Text(text.orEmpty(), color = if (selected) colors.surface else colors.onSurface,
+                if (leadingIcon != null) {
+                    Icon(
+                        leadingIcon,
+                        null, tint = if (selected) colors.surface else colors.onSurface, modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(4.dp))
+                }
+                Text(
+                    text.orEmpty(), color = if (selected) colors.surface else colors.onSurface,
                     fontFamily = FontFamily.SansSerif, fontSize = 14.sp, lineHeight = 18.sp,
-                    fontWeight = FontWeight.Medium)
+                    letterSpacing = 0.2.sp,
+                    fontWeight = FontWeight.Medium, maxLines = 1,
+                    modifier = Modifier.padding(vertical = 6.dp).offset(y = 0.5.dp)
+                )
             }
         }
     }
 }
 
 @Composable
-private fun FeedIconButton(
-    icon: ImageVector,
-    contentDescription: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    IconButton(onClick = onClick, modifier = modifier.size(48.dp)) {
-        Icon(icon, contentDescription, modifier = Modifier.size(24.dp))
-    }
-}
-
-@Composable
 fun ShortsShelfView(
     onShortClick: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    shorts: List<FeedShort> = MockShortFeed.initial()
 ) {
     Column(
-        modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 12.dp)
+        modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)
             .testTag("home_shorts_shelf")
     ) {
         Row(
-            Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            Modifier.fillMaxWidth().height(44.dp).padding(start = 4.dp, bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            ShortsIcon(modifier = Modifier.size(32.dp))
+            ShortsIcon(modifier = Modifier.size(36.dp))
             Spacer(Modifier.width(12.dp))
             Text(
-                "Shorts", fontSize = 20.sp, fontFamily = FontFamily.SansSerif,
+                "Shorts", fontSize = 18.sp, lineHeight = 21.sp, fontFamily = FontFamily.SansSerif,
+                letterSpacing = 0.12.sp,
                 fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f).offset(y = 1.dp)
             )
             FeedIconButton(
                 Icons.Outlined.MoreHoriz, "Shorts options",
-                onClick = { onShortClick("Shorts options") }
+                onClick = { onShortClick("Shorts options") },
+                modifier = Modifier.offset(x = 2.dp).size(36.dp)
             )
         }
-        val titles = listOf(
-            "This camera fits in my pocket",
-            "My favorite five-minute breakfast",
-            "I could listen to this keyboard all day",
-            "The city after everyone goes home"
-        )
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            titles.chunked(2).forEachIndexed { row, pair ->
+            shorts.chunked(2).forEach { pair ->
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    pair.forEachIndexed { column, title ->
+                    pair.forEach { short ->
                         ShortCardItem(
-                            title = title, gradientIndex = row * 2 + column,
+                            short = short,
                             onShortClick = onShortClick, modifier = Modifier.weight(1f)
                         )
                     }
@@ -534,11 +616,11 @@ fun ShortsShelfView(
 
 @Composable
 fun ShortCardItem(
-    title: String,
-    gradientIndex: Int,
+    short: FeedShort,
     onShortClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val title = short.title
     Card(
         shape = RoundedCornerShape(8.dp),
         modifier = modifier.fillMaxWidth().aspectRatio(2f / 3f)
@@ -546,14 +628,7 @@ fun ShortCardItem(
     ) {
         Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceVariant)) {
             AsyncImage(
-                model = com.renflare.tubepreview.data.MockFeedProvider.photoUrl(
-                    listOf(
-                        "1516035069371-29a1b244cc32",
-                        "1490645935967-10de6ba17061",
-                        "1587829741301-dc798b83add3",
-                        "1480714378408-67cf0d13bc1b"
-                    )[gradientIndex.coerceIn(0, 3)], 480, 720
-                ),
+                model = short.thumbnailUrl,
                 contentDescription = null, contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
@@ -567,17 +642,17 @@ fun ShortCardItem(
             )
             Text(
                 title, color = Color.White, fontWeight = FontWeight.Medium,
-                fontSize = 14.sp, lineHeight = 18.sp, fontFamily = FontFamily.SansSerif,
+                fontSize = 14.sp, lineHeight = 17.75.sp, fontFamily = FontFamily.SansSerif,
+                letterSpacing = 0.15.sp,
                 maxLines = 2, overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.align(Alignment.BottomStart).padding(8.dp)
             )
-            IconButton(
+            FeedIconButton(
+                Icons.Outlined.MoreHoriz, "Options for $title",
                 onClick = { onShortClick(title) },
-                modifier = Modifier.align(Alignment.TopEnd).size(48.dp)
-            ) {
-                Icon(Icons.Outlined.MoreHoriz, "Options for $title",
-                    tint = Color.White, modifier = Modifier.size(24.dp))
-            }
+                modifier = Modifier.align(Alignment.TopEnd).size(48.dp),
+                tint = Color.White
+            )
         }
     }
 }

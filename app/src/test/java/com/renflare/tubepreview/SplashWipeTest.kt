@@ -32,7 +32,7 @@ class SplashWipeTest {
     @get:Rule val frames = TemporaryFolder()
 
     @Test
-    fun movingPlayIconErasesTheLineBehindItUntilNothingRemains() {
+    fun playheadAndBarTailMeetAtCenterWithoutOvershooting() {
         val sweep = mutableStateOf(0f)
         compose.setContent {
             TubePreviewTheme(darkTheme = true) {
@@ -44,27 +44,44 @@ class SplashWipeTest {
                 }
             }
         }
-        fun remainingLinePixels(frame: String): Int {
-            val filePath = File(frames.root, "wipe-$frame.png").absolutePath
-            compose.onRoot().captureRoboImage(
-                filePath = filePath,
-                roborazziOptions = RoborazziOptions(taskType = RoborazziTaskType.Record)
-            )
-            val pixels = ImageIO.read(File(filePath))
-            val y = pixels.height / 2
-            return (0 until pixels.width).count { x ->
-                val pixel = pixels.getRGB(x, y)
-                val red = (pixel ushr 16) and 255
-                val green = (pixel ushr 8) and 255
-                red > 204 && green < 102
-            }
+        fun frame(name: String): java.awt.image.BufferedImage {
+            val path = File(frames.root, "convergence-$name.png").absolutePath
+            compose.onRoot().captureRoboImage(filePath = path,
+                roborazziOptions = RoborazziOptions(taskType = RoborazziTaskType.Record))
+            return ImageIO.read(File(path))
         }
-        val fullLine = remainingLinePixels("start")
-        assertTrue(fullLine > 0)
-        compose.runOnIdle { sweep.value = 0.5f }
-        val halfLine = remainingLinePixels("middle")
-        assertTrue(halfLine > fullLine * 0.4f && halfLine < fullLine * 0.7f)
+        fun redLine(image: java.awt.image.BufferedImage): List<Int> =
+            (0 until image.width).filter { x ->
+                val pixel = image.getRGB(x, image.height / 2)
+                ((pixel ushr 16) and 255) > 204 && ((pixel ushr 8) and 255) < 102
+            }
+        fun playTip(image: java.awt.image.BufferedImage): Int =
+            (0 until image.width).last { x ->
+                val pixel = image.getRGB(x, image.height / 2)
+                ((pixel ushr 16) and 255) > 235 && ((pixel ushr 8) and 255) > 235
+            }
+        val first = frame("start")
+        val fullLine = redLine(first)
+        assertTrue(fullLine.isNotEmpty())
+        var previousTip = playTip(first)
+        var previousTail = fullLine.last()
+        for (position in listOf(0.25f, 0.5f, 0.75f)) {
+            compose.runOnIdle { sweep.value = position }
+            val image = frame("$position")
+            val line = redLine(image)
+            val tip = playTip(image)
+            assertTrue("The playhead must advance right", tip > previousTip)
+            assertTrue("The tail must retract left", line.last() < previousTail)
+            assertTrue("The bar must shrink proportionally",
+                kotlin.math.abs(line.size - fullLine.size * (1f - position)) < 5)
+            assertTrue("The playhead stays to the left of the remaining bar", tip <= line.first())
+            previousTip = tip
+            previousTail = line.last()
+        }
         compose.runOnIdle { sweep.value = 1f }
-        assertEquals(0, remainingLinePixels("end"))
+        val final = frame("end")
+        assertTrue(redLine(final).isEmpty())
+        assertTrue("The play tip finishes at center, not the far right",
+            kotlin.math.abs(playTip(final) - final.width / 2) <= 3)
     }
 }

@@ -34,7 +34,15 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.renflare.tubepreview.data.ComparisonMode
+import com.renflare.tubepreview.ui.components.AppMessageDialog
+import com.renflare.tubepreview.ui.components.ABPreviewEditor
+import com.renflare.tubepreview.ui.components.ABPreviewToggle
+import com.renflare.tubepreview.ui.components.settingsSwitchColors
 import com.renflare.tubepreview.data.CreatorSettings
+import com.renflare.tubepreview.data.AvatarCrop
+import com.renflare.tubepreview.ui.components.AvatarPhoto
+import com.renflare.tubepreview.ui.components.AvatarCropDialog
 import com.renflare.tubepreview.ui.theme.BrandRed
 import com.renflare.tubepreview.ui.components.glassBorder
 import com.renflare.tubepreview.ui.components.glassBorderStroke
@@ -61,7 +69,14 @@ fun SettingsScreen(
     onUpdatePreviewInterval: (Int) -> Unit,
     onUpdatePlaceholderDefaults: (String, String, String) -> Unit,
     onResetAll: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onUpdateAvatarCrop: (String, AvatarCrop) -> Unit = { _, _ -> },
+    onABEnabled: (Boolean) -> Unit = {},
+    onABMode: (ComparisonMode) -> Unit = {},
+    onVariantTitle: (Int, String) -> Unit = { _, _ -> },
+    onVariantThumbnail: (Int, Uri) -> Unit = { _, _ -> },
+    onClearVariant: (Int) -> Unit = {},
+    onSelectVariant: (Int) -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     val context = LocalContext.current
@@ -69,55 +84,55 @@ fun SettingsScreen(
     var showFontLicense by remember { mutableStateOf(false) }
     if (showFontLicense) {
         val license = remember { context.assets.open("licenses/nunito.txt").bufferedReader().use { it.readText() } }
-        AlertDialog(
-            onDismissRequest = { showFontLicense = false },
-            title = { Text("Nunito font license") },
-            text = { Text(license, modifier = Modifier.verticalScroll(rememberScrollState())) },
-            confirmButton = { TextButton(onClick = { showFontLicense = false }) { Text("Done") } }
-        )
+        AppMessageDialog(
+            title = "Nunito font license",
+            onDismiss = { showFontLicense = false },
+            confirmLabel = "Done",
+            modifier = Modifier.testTag("font_license_dialog")
+        ) {
+            Text(license)
+        }
     }
     var showAssetLicenses by remember { mutableStateOf(false) }
     if (showAssetLicenses) {
-        AlertDialog(
-            onDismissRequest = { showAssetLicenses = false },
-            title = { Text("Third-party licenses") },
-            text = {
-                Column {
-                    Text("Free icons from Streamline, adapted for TubePreview. Licensed under CC BY 4.0.")
-                    TextButton(onClick = { uriHandler.openUri("https://streamlinehq.com") }) {
-                        Text("Streamline")
-                    }
-                    TextButton(onClick = { uriHandler.openUri("https://creativecommons.org/licenses/by/4.0/") }) {
-                        Text("Creative Commons Attribution 4.0")
-                    }
-                    TextButton(onClick = {
-                        showAssetLicenses = false
-                        showFontLicense = true
-                    }) { Text("Nunito · Open Font License") }
-                }
-            },
-            confirmButton = { TextButton(onClick = { showAssetLicenses = false }) { Text("Done") } }
-        )
+        AppMessageDialog(
+            title = "Third-party licenses",
+            onDismiss = { showAssetLicenses = false },
+            confirmLabel = "Done",
+            modifier = Modifier.testTag("asset_licenses_dialog")
+        ) {
+            Text("Free icons from Streamline, adapted for TubePreview. Licensed under CC BY 4.0.")
+            TextButton(onClick = { uriHandler.openUri("https://streamlinehq.com") }) {
+                Text("Streamline")
+            }
+            TextButton(onClick = { uriHandler.openUri("https://creativecommons.org/licenses/by/4.0/") }) {
+                Text("Creative Commons Attribution 4.0")
+            }
+            TextButton(onClick = {
+                showAssetLicenses = false
+                showFontLicense = true
+            }) { Text("Nunito · Open Font License") }
+        }
     }
     val focusManager = LocalFocusManager.current
     var showResetConfirmation by rememberSaveable { mutableStateOf(false) }
 
     if (showResetConfirmation) {
-        AlertDialog(
-            onDismissRequest = { showResetConfirmation = false },
-            title = { Text("Reset your preview?") },
-            text = { Text("Your uploaded images and custom preview settings will be removed.") },
-            confirmButton = {
-                TextButton(onClick = {
-                    focusManager.clearFocus(force = true)
-                    showResetConfirmation = false
-                    onResetAll()
-                }) { Text("Reset", color = MaterialTheme.colorScheme.error) }
-            },
-            dismissButton = {
-                TextButton(onClick = { showResetConfirmation = false }) { Text("Cancel") }
+        AppMessageDialog(
+            title = "Reset your preview?",
+            onDismiss = { showResetConfirmation = false },
+            confirmLabel = "Reset",
+            cancelLabel = "Cancel",
+            destructive = true,
+            modifier = Modifier.testTag("reset_confirmation_dialog"),
+            onConfirm = {
+                focusManager.clearFocus(force = true)
+                showResetConfirmation = false
+                onResetAll()
             }
-        )
+        ) {
+            Text("Your uploaded images and custom preview settings will be removed.")
+        }
     }
 
     // Form inputs initialized from settings
@@ -131,10 +146,36 @@ fun SettingsScreen(
     var placeholderViewsInput by remember(settings.placeholderViewsDefault) { mutableStateOf(settings.placeholderViewsDefault) }
     var placeholderDurationInput by remember(settings.placeholderDurationDefault) { mutableStateOf(settings.placeholderDurationDefault) }
 
+    var pendingAvatarCrop by rememberSaveable { mutableStateOf(false) }
+    var cropPhotoUri by rememberSaveable { mutableStateOf<String?>(null) }
+    var previousAvatarUri by remember { mutableStateOf(settings.profilePictureUri) }
+    LaunchedEffect(settings.profilePictureUri) {
+        if (pendingAvatarCrop && settings.profilePictureUri.isNotBlank() &&
+            settings.profilePictureUri != previousAvatarUri) {
+            cropPhotoUri = settings.profilePictureUri
+            pendingAvatarCrop = false
+        }
+        previousAvatarUri = settings.profilePictureUri
+    }
+    cropPhotoUri?.takeIf { it == settings.profilePictureUri }?.let { uri ->
+        AvatarCropDialog(
+            photoUri = uri,
+            initialCrop = settings.avatarCrop,
+            onDismiss = { cropPhotoUri = null },
+            onSave = { crop ->
+                onUpdateAvatarCrop(uri, crop)
+                cropPhotoUri = null
+            }
+        )
+    }
+
     // Media launchers
     val profilePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? -> uri?.let { onUpdateProfilePic(it) } }
+    ) { uri: Uri? -> uri?.let {
+        pendingAvatarCrop = true
+        onUpdateProfilePic(it)
+    } }
 
     val thumbnailPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -204,20 +245,24 @@ fun SettingsScreen(
                                 .background(MaterialTheme.colorScheme.surfaceVariant)
                                 .glassBorder(CircleShape)
                                 .clickable {
-                                    try {
-                                        profilePicker.launch("image/*")
-                                    } catch (e: Exception) {
-                                        android.widget.Toast.makeText(context, "No photo picker application available on this device", android.widget.Toast.LENGTH_LONG).show()
+                                    if (settings.profilePictureUri.isNotBlank()) {
+                                        cropPhotoUri = settings.profilePictureUri
+                                    } else {
+                                        try {
+                                            profilePicker.launch("image/*")
+                                        } catch (e: Exception) {
+                                            android.widget.Toast.makeText(context, "No photo picker application available on this device", android.widget.Toast.LENGTH_LONG).show()
+                                        }
                                     }
                                 }
                                 .testTag("settings_avatar_box"),
                             contentAlignment = Alignment.Center
                         ) {
                             if (settings.profilePictureUri.isNotEmpty()) {
-                                AsyncImage(
+                                AvatarPhoto(
                                     model = settings.profilePictureUri,
-                                    contentDescription = "Your channel pic placeholder",
-                                    contentScale = ContentScale.Crop,
+                                    crop = settings.avatarCrop,
+                                    contentDescription = "Adjust your channel photo",
                                     modifier = Modifier.fillMaxSize()
                                 )
                             } else {
@@ -272,6 +317,14 @@ fun SettingsScreen(
                         }
                     }
 
+                    if (settings.profilePictureUri.isNotBlank()) {
+                        OutlinedButton(
+                            onClick = { cropPhotoUri = settings.profilePictureUri },
+                            shape = RoundedCornerShape(20.dp),
+                            border = glassBorderStroke(),
+                            modifier = Modifier.heightIn(min = 48.dp).testTag("reposition_avatar_btn")
+                        ) { Text("Crop / reposition", fontWeight = FontWeight.Bold) }
+                    }
                     Text(
                         "Profile photos: up to 2 MB",
                         style = MaterialTheme.typography.bodySmall,
@@ -306,85 +359,92 @@ fun SettingsScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
 
-                    // Thumbnail selector
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(16f / 9f)
-                                .clip(RoundedCornerShape(20.dp))
-                                .background(MaterialTheme.colorScheme.background)
-                                .glassBorder()
-                                .clickable {
-                                    try {
-                                        thumbnailPicker.launch("image/*")
-                                    } catch (e: Exception) {
-                                        android.widget.Toast.makeText(context, "No photo picker application available on this device", android.widget.Toast.LENGTH_LONG).show()
+                    ABPreviewToggle(settings.abPreview.enabled, onABEnabled)
+                    if (settings.abPreview.enabled) {
+                        ABPreviewEditor(
+                            settings, onABMode, onVariantTitle, onVariantThumbnail, onClearVariant, onSelectVariant
+                        )
+                    } else {
+                        // Thumbnail selector
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(16f / 9f)
+                                    .clip(RoundedCornerShape(20.dp))
+                                    .background(MaterialTheme.colorScheme.background)
+                                    .glassBorder()
+                                    .clickable {
+                                        try {
+                                            thumbnailPicker.launch("image/*")
+                                        } catch (e: Exception) {
+                                            android.widget.Toast.makeText(context, "No photo picker application available on this device", android.widget.Toast.LENGTH_LONG).show()
+                                        }
                                     }
-                                }
-                                .testTag("settings_thumbnail_box"),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            if (settings.previewThumbnailUri.isNotEmpty()) {
-                                AsyncImage(
-                                    model = settings.previewThumbnailUri,
-                                    contentDescription = "Selected custom thumbnail image",
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                                // Tap indicator
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .background(Color.Black.copy(alpha = 0.3f)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = PlumpIcons.Edit,
-                                        contentDescription = "Change Image overlay",
-                                        tint = Color.White,
-                                        modifier = Modifier.size(32.dp)
+                                    .testTag("settings_thumbnail_box"),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (settings.previewThumbnailUri.isNotEmpty()) {
+                                    AsyncImage(
+                                        model = settings.previewThumbnailUri,
+                                        contentDescription = "Selected custom thumbnail image",
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier.fillMaxSize()
                                     )
-                                }
-                            } else {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Icon(
-                                        imageVector = PlumpIcons.Gallery,
-                                        contentDescription = "Pick thumbnail icon",
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                                        modifier = Modifier.size(36.dp)
-                                    )
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Text(
-                                        "Tap to choose a thumbnail",
-                                        fontSize = 14.sp,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        fontWeight = FontWeight.Bold
-                                    )
+                                    // Tap indicator
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .background(Color.Black.copy(alpha = 0.3f)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = PlumpIcons.Edit,
+                                            contentDescription = "Change Image overlay",
+                                            tint = Color.White,
+                                            modifier = Modifier.size(32.dp)
+                                        )
+                                    }
+                                } else {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Icon(
+                                            imageVector = PlumpIcons.Gallery,
+                                            contentDescription = "Pick thumbnail icon",
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                            modifier = Modifier.size(36.dp)
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            "Tap to choose a thumbnail",
+                                            fontSize = 14.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
                                 }
                             }
                         }
+
+                        Text(
+                            "Up to 2 MB • Recommended: 1280 × 720 (16:9)",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.testTag("thumbnail_upload_guidance")
+                        )
+
+                        // Outlined Textfields for Title, views, duration
+                        GlassTextField(
+                            value = previewTitleInput,
+                            onValueChange = {
+                                previewTitleInput = it
+                                onUpdatePreviewTitle(it)
+                            },
+                            label = "Title",
+                            shape = RoundedCornerShape(20.dp),
+                            modifier = Modifier.fillMaxWidth().testTag("settings_title_input"),
+                            maxLines = 3
+                        )
                     }
-
-                    Text(
-                        "Up to 2 MB • Recommended: 1280 × 720 (16:9)",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.testTag("thumbnail_upload_guidance")
-                    )
-
-                    // Outlined Textfields for Title, views, duration
-                    GlassTextField(
-                        value = previewTitleInput,
-                        onValueChange = {
-                            previewTitleInput = it
-                            onUpdatePreviewTitle(it)
-                        },
-                        label = "Title",
-                        shape = RoundedCornerShape(20.dp),
-                        modifier = Modifier.fillMaxWidth().testTag("settings_title_input"),
-                        maxLines = 3
-                    )
 
                     Column(
                         modifier = Modifier.fillMaxWidth(),
@@ -541,12 +601,7 @@ fun SettingsScreen(
                         Switch(
                             checked = settings.isDarkMode,
                             onCheckedChange = onUpdateDarkMode,
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = Color.White,
-                                checkedTrackColor = BrandRed,
-                                uncheckedThumbColor = MaterialTheme.colorScheme.onSurface,
-                                uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
-                            ),
+                            colors = settingsSwitchColors(),
                             modifier = Modifier.testTag("theme_switch_toggle").semantics { contentDescription = "Dark theme" }
                         )
                     }
@@ -710,10 +765,12 @@ fun SectionHeader(icon: androidx.compose.ui.graphics.vector.ImageVector, title: 
         modifier = Modifier.fillMaxWidth()
     ) {
         Box(
-            Modifier.size(44.dp).clip(CircleShape).background(BrandRed.copy(alpha = 0.10f)),
+            Modifier.size(44.dp).clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primaryContainer)
+                .testTag("section_icon_$title"),
             contentAlignment = Alignment.Center
         ) {
-            Icon(icon, null, tint = BrandRed, modifier = Modifier.size(24.dp))
+            Icon(icon, null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(24.dp))
         }
         Text(title, style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onBackground)

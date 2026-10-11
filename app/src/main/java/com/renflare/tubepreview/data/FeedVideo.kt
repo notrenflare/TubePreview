@@ -13,7 +13,8 @@ data class FeedVideo(
     val gradientIndex: Int = 0,
     val avatarColorHex: String = "",
     val avatarLetter: String = "",
-    val thumbnailLabel: String = ""
+    val thumbnailLabel: String = "",
+    val avatarCrop: AvatarCrop = AvatarCrop()
 )
 
 data class FakeCreator(

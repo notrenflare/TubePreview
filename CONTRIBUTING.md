@@ -1,61 +1,52 @@
 # Contributing
 
-## Local setup
+Thank you for helping improve TubePreview. Focused bug fixes, accessibility improvements, and clear reports are welcome.
 
-Use Android Studio, JDK 21, Android SDK Platform 37, and Node.js 22 or newer.
-Clone the repository with an account that has access and open the root directory.
-Run the `app` configuration on Android 7.0 (API 24) or newer.
+## Setup
 
-The app does not require API keys or a backend. The application ID is
-`com.renflare.tubepreview`; the Gradle wrapper manages the Gradle version.
+Install Android Studio, JDK 21, and Android SDK Platform 37. Clone the repository and open its root directory in Android Studio. Run the `app` configuration on Android 7.0 (API 24) or newer.
 
-## Making a change
+The app requires no API keys or backend. Debug builds use Android's standard development keystore. Release builds remain unsigned unless signing environment variables are explicitly provided.
 
-1. Create a branch with a short descriptive name, such as `fix/image-import`.
-2. Keep the change focused and follow the existing Kotlin and Compose patterns.
-3. Run the checks below and review `git diff --check` before committing.
-4. Open a pull request describing the problem, resulting behavior, and validation.
-   Include screenshots when the UI changes, using sample content only.
-5. Wait for the build and security checks to pass before merging.
+## Changes
+
+1. Open an issue for a substantial feature or architectural change.
+2. Create a descriptive branch, such as `fix/image-import`.
+3. Follow the existing Kotlin and Compose conventions. Keep UI state in the appropriate component and persisted settings in the repository.
+4. Add tests for behavior changes and run the checks below.
+5. Open a pull request explaining the problem, resulting behavior, and validation. Include light/dark screenshots for UI changes, using sample content only.
+
+Do not commit private photos, credentials, signing keys, IDE state, or generated build output.
+
+## Checks
 
 ```sh
-bash ./gradlew :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease :app:lintDebug :app:lintRelease :app:auditDependencies --init-script scripts/security-audit.init.gradle --no-configuration-cache
-node scripts/audit-dependencies.mjs
-gitleaks git --redact=100 --log-opts="--all" .
+bash ./gradlew :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease :app:lintDebug :app:lintRelease
 git diff --check
 ```
 
-Device tests live in `app/src/androidTest/` and run separately on an emulator or
-connected device. CI runs local unit tests, builds, lint, dependency checks, and
-Git history secret scans.
+CI also scans all Git history for secrets and checks exact resolved dependency versions against OSV. To run those checks locally, install Node.js 22 or newer and Gitleaks 8.30.1 or newer:
 
-## Release signing and distribution
+```sh
+bash ./gradlew :app:auditDependencies --init-script scripts/security-audit.init.gradle --no-configuration-cache
+node scripts/audit-dependencies.mjs
+gitleaks git --redact=100 --log-opts="--all" .
+```
 
-The release identity is retained in macOS Keychain. Use
-[scripts/sign-release.mjs](scripts/sign-release.mjs) to sign an unsigned APK with
-that existing identity. See [Distribution](docs/DISTRIBUTION.md) for commands,
-backup and recovery, and the public download repository's release checklist.
-
-Gradle also supports `KEYSTORE_PATH`, `STORE_PASSWORD`, and `KEY_PASSWORD` from
-the local build environment, using alias `upload`. Keep signing material outside
-Git. Never put passwords in shell command arguments, committed files, or logs.
+Unit and Compose UI tests run with Robolectric. The device test under `app/src/androidTest/` runs separately on a connected emulator or device.
 
 ## Project layout
 
 | Location | Purpose |
 | --- | --- |
-| `app/src/main/java/com/renflare/tubepreview/data/` | Settings, image storage, and sample feed data |
-| `app/src/main/java/com/renflare/tubepreview/ui/` | Compose screens, components, themes, and ViewModel |
-| `app/src/main/res/` | Android resources and app branding |
-| `app/src/test/` | Local unit tests |
-| `app/src/androidTest/` | Device UI tests |
-| `scripts/` | Dependency inventory and security checks |
-| `docs/screenshots/` | README screenshots |
+| `app/src/main/java/com/renflare/tubepreview/data/` | Settings, image imports, crop state, comparison options, and sample feed composition |
+| `app/src/main/java/com/renflare/tubepreview/ui/screens/` | Onboarding, home feed, and settings |
+| `app/src/main/java/com/renflare/tubepreview/ui/components/` | Reusable UI, dialogs, image framing, and feed rendering |
+| `app/src/main/java/com/renflare/tubepreview/ui/viewmodel/` | State flows and user actions |
+| `app/src/test/` | Local unit and UI tests |
+| `scripts/` | Security checks and maintainer release signing |
+| `docs/` | Architecture, privacy, distribution, and screenshots |
 
-## Reporting a problem
+See [architecture](docs/ARCHITECTURE.md) for data flow and [distribution](docs/DISTRIBUTION.md) for signing and release verification.
 
-For bugs, include the Android version, device model, reproduction steps, and what
-you expected to happen. Remove private content from screenshots and logs.
-For security issues, follow [SECURITY.md](SECURITY.md).
-
-Never commit credentials, signing keys, private images, or generated build output.
+For bugs, include device model, Android version, steps to reproduce, and expected behavior. Remove private content from screenshots and logs. Use [SECURITY.md](SECURITY.md) for vulnerabilities.

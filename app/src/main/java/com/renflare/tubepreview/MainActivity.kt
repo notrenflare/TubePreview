@@ -7,17 +7,16 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.renflare.tubepreview.ui.components.ImageWarningDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -39,9 +38,19 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val isColdLaunch = !hasStarted
         hasStarted = true
+        var startingLogoWidth by mutableStateOf(144.dp)
         if (Build.VERSION.SDK_INT >= 31) {
-            // Hand off the platform starting window without a second exit animation.
-            splashScreen.setOnExitAnimationListener { it.remove() }
+            // Preserve the platform's actual artwork scale at the Compose handoff.
+            // splash_logo.xml places the unchanged 62dp image in a 108dp layer.
+            splashScreen.setOnExitAnimationListener { splashView ->
+                splashView.iconView?.width?.takeIf { it > 0 }?.let { width ->
+                    startingLogoWidth = (width / resources.displayMetrics.density * 62f / 108f).dp
+                }
+                // Keep the platform cover until Compose has drawn at that size.
+                window.decorView.postOnAnimation {
+                    window.decorView.postOnAnimation { splashView.remove() }
+                }
+            }
         }
         enableEdgeToEdge()
         if (Build.VERSION.SDK_INT >= 29) {
@@ -51,10 +60,11 @@ class MainActivity : ComponentActivity() {
         }
         setContent {
             val viewModel: CreatorViewModel = viewModel()
-            val settings by viewModel.settingsState.collectAsState()
-            val feedList by viewModel.homeFeedState.collectAsState()
-            val isRefreshing by viewModel.isRefreshing.collectAsState()
-            val imageWarning by viewModel.imageWarning.collectAsState()
+            val settings by viewModel.settingsState.collectAsStateWithLifecycle()
+            val feedList by viewModel.homeFeedState.collectAsStateWithLifecycle()
+            val shortsFeed by viewModel.shortsFeedState.collectAsStateWithLifecycle()
+            val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+            val imageWarning by viewModel.imageWarning.collectAsStateWithLifecycle()
             var splashComplete by remember { mutableStateOf(!isColdLaunch) }
 
             TubePreviewTheme(darkTheme = settings.isDarkMode) {
@@ -92,10 +102,12 @@ class MainActivity : ComponentActivity() {
                                     HomeScreen(
                                         settings = settings,
                                         videoFeed = feedList,
+                                        shortsFeed = shortsFeed,
                                         isRefreshing = isRefreshing,
                                         onRefresh = viewModel::refreshFeed,
                                         onNavigateToSettings = { navController.navigate("settings") },
-                                        onToggleTheme = { viewModel.setDarkMode(it) }
+                                        onToggleTheme = { viewModel.setDarkMode(it) },
+                                        onSelectVariant = { viewModel.selectABOption(it) }
                                     )
                                 }
                                 composable("settings") {
@@ -114,28 +126,30 @@ class MainActivity : ComponentActivity() {
                                         onUpdatePlaceholderDefaults = { title, views, duration ->
                                             viewModel.updatePlaceholderDefaults(title, views, duration)
                                         },
-                                        onResetAll = { viewModel.resetAllSettings() }
+                                        onResetAll = { viewModel.resetAllSettings() },
+                                        onUpdateAvatarCrop = viewModel::setAvatarCrop,
+                                        onABEnabled = { viewModel.setABEnabled(it) },
+                                        onABMode = { viewModel.setABMode(it) },
+                                        onVariantTitle = { index, title -> viewModel.setVariantTitle(index, title) },
+                                        onVariantThumbnail = { index, uri -> viewModel.setVariantThumbnail(index, uri) },
+                                        onClearVariant = { viewModel.clearVariant(it) },
+                                        onSelectVariant = {
+                                            viewModel.selectABOption(it)
+                                            navController.popBackStack()
+                                        }
                                     )
                                 }
                             }
                         }
                         imageWarning?.let { message ->
-                            AlertDialog(
-                                onDismissRequest = viewModel::dismissImageWarning,
-                                title = { Text("Couldn't use this image") },
-                                text = { Text(message) },
-                                confirmButton = {
-                                    TextButton(onClick = viewModel::dismissImageWarning) {
-                                        Text("Got it")
-                                    }
-                                }
-                            )
+                            ImageWarningDialog(message, onDismiss = viewModel::dismissImageWarning)
                         }
                         if (!splashComplete) {
                             StartupSplash(
                                 isReady = settings.isLoaded &&
                                     (!settings.isOnboarded || feedList.isNotEmpty() || settings.feedSize <= 0),
-                                onComplete = { splashComplete = true }
+                                onComplete = { splashComplete = true },
+                                initialLogoWidth = startingLogoWidth
                             )
                         }
                     }

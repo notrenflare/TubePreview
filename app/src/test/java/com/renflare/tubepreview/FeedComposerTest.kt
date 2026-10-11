@@ -65,6 +65,31 @@ class FeedComposerTest {
         assertTrue(feed.first().isUserPreview)
     }
 
+    @Test fun refreshReplacesEveryShortTitleAndThumbnailTogether() {
+        var layout = FeedLayout()
+        val seenPairs = mutableMapOf<String, String>()
+        repeat(40) { seed ->
+            val next = FeedComposer.reshuffle(layout, settings, Random(seed))
+            assertEquals(4, next.shorts.size)
+            assertEquals(4, next.shorts.map { it.id }.toSet().size)
+            assertTrue(layout.shorts.map { it.title }.toSet().intersect(next.shorts.map { it.title }.toSet()).isEmpty())
+            assertTrue(layout.shorts.map { it.thumbnailUrl }.toSet().intersect(next.shorts.map { it.thumbnailUrl }.toSet()).isEmpty())
+            next.shorts.forEach { short ->
+                seenPairs[short.title]?.let { assertEquals(it, short.thumbnailUrl) }
+                seenPairs[short.title] = short.thumbnailUrl
+            }
+            layout = next
+        }
+        assertEquals(12, seenPairs.size)
+    }
+
+    @Test fun savedAvatarFramingIsAppliedOnlyToUserPreviews() {
+        val crop = com.renflare.tubepreview.data.AvatarCrop(0.6f, -0.3f, 2f)
+        val feed = FeedComposer.compose(settings.copy(avatarCrop = crop), FeedLayout())
+        assertTrue(feed.filter { it.isUserPreview }.all { it.avatarCrop == crop })
+        assertTrue(feed.filterNot { it.isUserPreview }.all { it.avatarCrop.zoom == 1f })
+    }
+
     @Test fun samplesAreUniqueAndHaveNoCalendarYears() {
         val samples = MockFeedProvider.getPlaceholderVideos()
         assertEquals(30, samples.size)

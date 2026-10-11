@@ -25,3 +25,7 @@ build/
 *.pem
 *.key
 google-services.json
+
+# Local release investigations
+/SECURITY_AUDIT.md
+/perfetto_analysis_report.md
