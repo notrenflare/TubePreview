@@ -4,7 +4,7 @@ Source, issues, and signed Android releases live in [notrenflare/TubePreview](ht
 
 ## Build and sign
 
-Always increase `versionCode` for each release and set `versionName` to the public release version. The 1.0 launch uses version code 3 so it can update earlier test builds. Keep the application ID `com.renflare.tubepreview` and the existing release signing identity so installed users can update without losing data.
+Always increase `versionCode` for each release and set `versionName` to the public release version. Keep the application ID `com.renflare.tubepreview` and the release signing identity so installed users can update without losing data.
 
 ```sh
 bash ./gradlew :app:testDebugUnitTest :app:assembleRelease :app:lintRelease
@@ -33,7 +33,7 @@ The signing identity must be backed up securely outside Git. Losing it can preve
 4. Generate `SHA256SUMS.txt` using `shasum -a 256`. Include `SIGNING_CERTIFICATE.txt` and release notes linking the source commit.
 5. Assemble a draft release with all assets, then publish. Verify that an anonymous download matches the local checksum and certificate.
 
-Published APKs and release tags are preserved. Pre-launch downloads in the former `TubePreview-releases` repository remain available for existing links; new releases are published in this source repository. Documentation may be corrected without replacing a binary.
+Published APKs and release tags are preserved. Releases are published in this repository. Documentation may be corrected without replacing a binary.
 
 A scan or earlier provider review is evidence only for that exact binary. Android installation warnings are controlled by the platform; do not claim universal clearance or recommend disabling Play Protect.
 
