@@ -3,7 +3,7 @@
 </p>
 
 <h1 align="center">TubePreview</h1>
-<p align="center">See your thumbnail in the feed before you publish.</p>
+<p align="center">Preview your YouTube thumbnails and titles before you publish.</p>
 
 <p align="center">
   <a href="https://github.com/notrenflare/TubePreview/releases/latest"><strong>Download for Android</strong></a>
@@ -18,7 +18,7 @@
   <img src="https://img.shields.io/badge/Android-7.0%2B-3DDC84?logo=android&amp;logoColor=white" alt="Android 7.0 or newer" />
 </p>
 
-TubePreview is a native Android app for trying thumbnails, titles, and channel branding in a YouTube-style home feed. Place your preview among sample videos, scroll past it, and see how it reads at a realistic size. No account or YouTube sign-in required.
+TubePreview is a native Android app for previewing YouTube thumbnails, titles, and channel branding in a realistic home feed. Place your preview among sample videos, scroll past it, and see how it reads at a realistic size. No account or YouTube sign-in required.
 
 <p align="center">
   <a href="docs/screenshots/home-dark.png"><img src="docs/screenshots/home-dark.png" width="220" alt="Thumbnail preview in the dark home feed" /></a>
@@ -85,4 +85,4 @@ TubePreview is open source under the [Apache License 2.0](LICENSE). You can use,
 
 TubePreview is an independent project and is not affiliated with YouTube or Google. YouTube and YouTube Shorts are trademarks of Google LLC. Third-party asset credits are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
-Made with ❤️ by [renflare](https://github.com/notrenflare).
+Made with ❤️ by [renflare](https://github.com/notrenflare), with contributions from [Codex](https://github.com/codex).
