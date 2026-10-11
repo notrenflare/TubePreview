@@ -40,7 +40,7 @@ A/B preview is a visual comparison tool. It does not run a YouTube experiment, c
 
 [**Get the latest signed APK**](https://github.com/notrenflare/TubePreview/releases/latest) for Android 7.0 (API 24) or newer.
 
-Open the APK on your phone and follow Android's installation prompts. Each release includes a SHA-256 checksum and the signing certificate fingerprint. Install updates over the existing app to keep your saved previews.
+Open the APK on your phone and follow Android's installation prompts. The [release verification record](docs/RELEASE_VERIFICATION.md) includes the APK checksum, signing fingerprint, and VirusTotal report. Install updates over the existing app to keep your saved previews.
 
 ## Getting started
 

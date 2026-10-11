@@ -20,4 +20,4 @@ TubePreview has no sign-in, backend API, or embedded API keys. Imported images a
 - Release signing material is kept outside Git. Published APKs include a checksum and certificate fingerprint.
 - CI runs unit tests, lint, dependency advisory checks, and a redacted Git-history secret scan.
 
-Automated checks reduce risk; they do not prove the absence of vulnerabilities. See [privacy](docs/PRIVACY.md) and [distribution](docs/DISTRIBUTION.md) for further details.
+Automated checks reduce risk; they do not prove the absence of vulnerabilities. See the dated [release verification record](docs/RELEASE_VERIFICATION.md), [privacy](docs/PRIVACY.md), and [distribution](docs/DISTRIBUTION.md) for further details.
