@@ -93,14 +93,30 @@ fun SettingsScreen(
             Text(license)
         }
     }
+    var showAppLicense by remember { mutableStateOf(false) }
+    if (showAppLicense) {
+        val license = remember { context.assets.open("licenses/tubepreview.txt").bufferedReader().use { it.readText() } }
+        AppMessageDialog(
+            title = "TubePreview license",
+            onDismiss = { showAppLicense = false },
+            confirmLabel = "Done",
+            modifier = Modifier.testTag("app_license_dialog")
+        ) {
+            Text(license)
+        }
+    }
     var showAssetLicenses by remember { mutableStateOf(false) }
     if (showAssetLicenses) {
         AppMessageDialog(
-            title = "Third-party licenses",
+            title = "Licenses",
             onDismiss = { showAssetLicenses = false },
             confirmLabel = "Done",
             modifier = Modifier.testTag("asset_licenses_dialog")
         ) {
+            TextButton(onClick = {
+                showAssetLicenses = false
+                showAppLicense = true
+            }) { Text("TubePreview · Apache License 2.0") }
             Text("Free icons from Streamline, adapted for TubePreview. Licensed under CC BY 4.0.")
             TextButton(onClick = { uriHandler.openUri("https://streamlinehq.com") }) {
                 Text("Streamline")

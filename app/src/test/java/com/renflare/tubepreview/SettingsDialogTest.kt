@@ -82,7 +82,12 @@ class SettingsDialogTest {
             compose.runOnIdle { assertEquals(if (theme) 2 else 1, resets) }
             compose.onNodeWithTag("settings_asset_licenses").performScrollTo().performClick()
             compose.onNodeWithTag("asset_licenses_dialog").assertIsDisplayed()
-            compose.onNodeWithText("Nunito · Open Font License").performClick()
+            compose.onNodeWithText("TubePreview · Apache License 2.0").performClick()
+            compose.onNodeWithTag("app_license_dialog").assertIsDisplayed()
+            compose.onNodeWithText("Done").assertIsDisplayed().performClick()
+            compose.onNodeWithTag("app_license_dialog").assertDoesNotExist()
+            compose.onNodeWithTag("settings_asset_licenses").performClick()
+            compose.onNodeWithText("Nunito · Open Font License").performScrollTo().performClick()
             compose.onNodeWithTag("font_license_dialog").assertIsDisplayed()
             compose.onNodeWithText("Done").assertIsDisplayed().performClick()
             compose.onNodeWithTag("font_license_dialog").assertDoesNotExist()

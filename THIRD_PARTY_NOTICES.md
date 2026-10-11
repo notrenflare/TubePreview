@@ -29,5 +29,4 @@ The supplied Shorts artwork identifies the YouTube Shorts preview format and is
 separate from the Streamline icon sets. TubePreview is not affiliated with YouTube
 or Google.
 
-These licenses apply to the third-party assets only. They do not grant a license
-to the TubePreview application source or branding.
+TubePreview's original source and artwork are licensed under the [Apache License 2.0](LICENSE). Third-party assets retain the licenses described above. Apache 2.0 does not grant trademark rights to the TubePreview name or logo, or to third-party marks.

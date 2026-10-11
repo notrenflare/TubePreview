@@ -1,12 +1,12 @@
 <p align="center">
-  <img src="app/src/main/ic_launcher-playstore.png" width="100" alt="TubePreview" />
+  <img src="docs/assets/logo.png" width="100" alt="TubePreview" />
 </p>
 
 <h1 align="center">TubePreview</h1>
 <p align="center">See your thumbnail in the feed before you publish.</p>
 
 <p align="center">
-  <a href="https://github.com/notrenflare/TubePreview-releases/releases/latest"><strong>Download for Android</strong></a>
+  <a href="https://github.com/notrenflare/TubePreview/releases/latest"><strong>Download for Android</strong></a>
   · <a href="#features">Features</a>
   · <a href="#build-from-source">Build from source</a>
   · <a href="https://github.com/notrenflare/TubePreview/issues">Report a bug</a>
@@ -14,6 +14,7 @@
 
 <p align="center">
   <a href="https://github.com/notrenflare/TubePreview/actions/workflows/ci.yml"><img src="https://github.com/notrenflare/TubePreview/actions/workflows/ci.yml/badge.svg" alt="Build and security checks" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="Apache License 2.0" /></a>
   <img src="https://img.shields.io/badge/Android-7.0%2B-3DDC84?logo=android&amp;logoColor=white" alt="Android 7.0 or newer" />
 </p>
 
@@ -37,7 +38,7 @@ A/B preview is a visual comparison tool. It does not run a YouTube experiment, c
 
 ## Download
 
-[**Get the latest signed APK**](https://github.com/notrenflare/TubePreview-releases/releases/latest) for Android 7.0 (API 24) or newer.
+[**Get the latest signed APK**](https://github.com/notrenflare/TubePreview/releases/latest) for Android 7.0 (API 24) or newer.
 
 Open the APK on your phone and follow Android's installation prompts. Each release includes a SHA-256 checksum and the signing certificate fingerprint. Install updates over the existing app to keep your saved previews.
 
@@ -77,6 +78,10 @@ Built with Kotlin, Jetpack Compose, Preferences DataStore, coroutines, and Coil.
 ## Contributing
 
 Bug reports and focused improvements are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup and checks. Report vulnerabilities through the [security policy](SECURITY.md).
+
+## License
+
+TubePreview is open source under the [Apache License 2.0](LICENSE). You can use, modify, and redistribute it, including commercially, subject to the license terms. Third-party assets retain their own licenses. The license does not grant trademark rights to the TubePreview name or logo.
 
 TubePreview is an independent project and is not affiliated with YouTube or Google. YouTube and YouTube Shorts are trademarks of Google LLC. Third-party asset credits are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 

@@ -50,3 +50,7 @@ Unit and Compose UI tests run with Robolectric. The device test under `app/src/a
 See [architecture](docs/ARCHITECTURE.md) for data flow and [distribution](docs/DISTRIBUTION.md) for signing and release verification.
 
 For bugs, include device model, Android version, steps to reproduce, and expected behavior. Remove private content from screenshots and logs. Use [SECURITY.md](SECURITY.md) for vulnerabilities.
+
+## License
+
+By submitting a contribution, you agree to license it under the project's [Apache License 2.0](LICENSE). Retain existing attribution and include the license and origin of any new third-party asset or dependency.
