@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.1 — 2026-10-13
+
+- Enforce non-debuggable release packaging.
+- Refresh signed distribution assets and release verification.
+
 ## 1.1.0 — 2026-10-13
 
 - Add an interactive first-run tour with customizable channel setup.

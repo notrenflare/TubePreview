@@ -12,8 +12,8 @@ android {
     applicationId = "com.renflare.tubepreview"
     minSdk = 24
     targetSdk = 37
-    versionCode = 4
-    versionName = "1.1.0"
+    versionCode = 5
+    versionName = "1.1.1"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
@@ -36,6 +36,7 @@ android {
 
   buildTypes {
     release {
+      isDebuggable = false
       isCrunchPngs = false
       isMinifyEnabled = true
       isShrinkResources = true
