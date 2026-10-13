@@ -52,5 +52,10 @@ jobs:
           :app:lintDebug :app:lintRelease :app:auditDependencies
           --init-script scripts/security-audit.init.gradle
           --no-configuration-cache --stacktrace -Pandroid.builder.sdkDownload=true
+      - name: Build unminified release variant
+        run: >
+          bash ./gradlew :app:assembleRelease
+          --init-script scripts/release-unminified.init.gradle
+          --no-configuration-cache --stacktrace -Pandroid.builder.sdkDownload=true
       - name: Check resolved dependencies against OSV
         run: node scripts/audit-dependencies.mjs

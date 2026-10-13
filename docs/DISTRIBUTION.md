@@ -7,9 +7,11 @@ Source, issues, and signed Android releases live in [notrenflare/TubePreview](ht
 Always increase `versionCode` for each release and set `versionName` to the public release version. Keep the application ID `com.renflare.tubepreview` and the release signing identity so installed users can update without losing data.
 
 ```sh
-bash ./gradlew clean :app:testDebugUnitTest :app:lintDebug :app:lintRelease :app:assembleRelease --no-build-cache --no-configuration-cache
-node scripts/sign-release.mjs app/build/outputs/apk/release/app-release-unsigned.apk /private/tmp/TubePreview-1.1.1.apk
+bash ./gradlew clean :app:testDebugUnitTest :app:lintDebug :app:lintRelease :app:assembleRelease --init-script scripts/release-unminified.init.gradle --no-build-cache --no-configuration-cache
+node scripts/sign-release.mjs app/build/outputs/apk/release/app-release-unsigned.apk /private/tmp/TubePreview-1.1.1-unminified.apk
 ```
+
+The recommended APK uses the unminified release configuration in `scripts/release-unminified.init.gradle`. It disables code and resource shrinking while retaining non-debuggable packaging and baseline profiles. Omit that init script to build the optimized configuration. The release includes the init script for use with its recorded source commit.
 
 The maintainer helper reads the existing encrypted identity from macOS Keychain, verifies its certificate, signs the APK, and removes temporary key material. It never generates or rotates keys. It refuses to overwrite an existing output.
 
@@ -35,7 +37,7 @@ The signing identity must be backed up securely outside Git. Losing it can preve
 6. If Play Protect flags the APK, submit its package name, exact VirusTotal hash, and public download link through Google's review form. Record submission acknowledgment separately from any review decision or device outcome.
 7. Update the dated release verification record. Repeat binary checks and vendor review for each new APK; results do not transfer between hashes.
 
-Published APKs and release tags are preserved. Releases are published in this repository. Documentation may be corrected without replacing a binary.
+Published APKs and release tags are preserved. A separately verified build variant is published under a distinct tag, such as `v1.1.1+unminified`, without replacing an existing binary. The APK retains its application version and signing identity. Documentation may be corrected without replacing a binary.
 
 A scan or earlier provider review is evidence only for that exact binary. Android installation warnings are controlled by the platform; do not claim universal clearance or recommend disabling Play Protect.
 

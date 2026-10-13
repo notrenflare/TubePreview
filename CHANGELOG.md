@@ -4,6 +4,7 @@
 
 - Enforce non-debuggable release packaging.
 - Refresh signed distribution assets and release verification.
+- Provide an unminified signed build with the same application features and update compatibility.
 
 ## 1.1.0 — 2026-10-13
 

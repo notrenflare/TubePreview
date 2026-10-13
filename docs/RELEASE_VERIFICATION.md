@@ -1,6 +1,49 @@
 # Release verification
 
-## TubePreview 1.1.1
+## TubePreview 1.1.1 — unminified build
+
+Verification date: **2026-10-13 (UTC)**. This is the recommended APK in [release v1.1.1+unminified](https://github.com/notrenflare/TubePreview/releases/tag/v1.1.1%2Bunminified).
+
+| Property | Value |
+| --- | --- |
+| File | `TubePreview-1.1.1.apk` |
+| Package | `com.renflare.tubepreview` |
+| Version | `1.1.1` (version code `5`) |
+| Size | 12,834,129 bytes |
+| Minimum / target Android API | 24 / 37 |
+| Source commit | [`4a997c5`](https://github.com/notrenflare/TubePreview/commit/4a997c5c388bc919aea968bd01095e48797ec5b8) |
+| Build configuration | Non-debuggable; code and resource shrinking disabled |
+
+APK SHA-256:
+
+```text
+fff70281833e5f6c71845e4daaae227caa86718bd2df03b422469ee6b86f04bd
+```
+
+Signing certificate SHA-256:
+
+```text
+e18661c71f6047130b297184bdd4d0b4497d372f0570404e89b179a1189774f3
+```
+
+### Build and installation checks
+
+- Retains all current app features, the existing package name, release certificate, and baseline profiles.
+- Unit tests, debug/release lint, and full release assembly passed with the published unminified configuration. Rebuilt code, resources, profiles, and source metadata matched the reviewed APK.
+- Android SDK `apksigner` verified v2/v3 signatures and the established certificate. ZIP integrity and 16 KB alignment checks passed.
+- The manifest is non-debuggable, disables backup and cleartext traffic, and requests `INTERNET` as its only platform permission. AndroidX also declares an internal signature-level receiver permission.
+- A normal update on a Samsung SM-A556E completed without a Play Protect warning at **18:53 UTC** with protections enabled. The installed APK matched the checksum above, version code `5` was confirmed, and the app launched successfully.
+- The published build configuration is provided in `release-unminified.init.gradle`, included with the release and maintained under `scripts/`.
+
+### Security vendor analysis
+
+[VirusTotal report for this APK](https://www.virustotal.com/gui/file/fff70281833e5f6c71845e4daaae227caa86718bd2df03b422469ee6b86f04bd)
+
+The completed analysis at **2026-10-13 14:30:53 UTC** showed **0 detections across 67 engines**, including Google Undetected. Eight additional engines could not process the file type; those results are not counted as clean verdicts.
+
+A Play Protect review for this exact package and APK hash was submitted on **2026-10-13**. The later normal-install result above applies to this exact binary. It is a dated device observation, not a guarantee of platform approval or the absence of future warnings. The earlier optimized APK and its immutable release remain preserved.
+
+## TubePreview 1.1.1 — optimized build
 
 Verification date: **2026-10-13**. These results apply to the signed APK attached to [release v1.1.1](https://github.com/notrenflare/TubePreview/releases/tag/v1.1.1).
 
@@ -41,11 +84,13 @@ Release builds use R8 code optimization and resource shrinking. Compared with th
 
 [VirusTotal report for this APK](https://www.virustotal.com/gui/file/b09fcc95868fd2d73cc2af26ea02e3c175b7565433cff8ff11fb619f08eb7ca6)
 
-At **2026-10-13 12:20:05 UTC**, the completed report showed **0 detections across 68 engines**. Seven additional engines could not process the file type; those results are not counted as clean verdicts.
+Completed analyses at **2026-10-13 12:20:05 UTC** and **2026-10-13 12:57:57 UTC** both showed **0 detections across 68 engines**. Seven additional engines could not process the file type; those results are not counted as clean verdicts.
 
 A normal update attempt on a Samsung SM-A556E displayed Google's **Uncommon** warning: “Play Protect hasn't seen an app from this developer before. It may be unsafe.” Installation was blocked; the existing 1.0 installation was retained.
 
-A Play Protect review for this exact package and APK hash was submitted on **2026-10-13**. Google's form acknowledged **“Your email has been sent.”** Submission acknowledgment is not a clearance decision. Installation warnings remain under Google's control.
+A Play Protect review for this exact package and APK hash was submitted on **2026-10-13**. A supplemental review included prior case references and controlled installation results. Google does not send appeal decision responses; the outcome is checked through ordinary installation with Play Protect enabled.
+
+The optimized APK still displayed the Uncommon warning during a normal Samsung update at **18:44 UTC** on 2026-10-13. The separately reviewed unminified build passed normal installation later that day and is now the recommended download. The optimized binary, source tag, and signing identity remain unchanged.
 
 ## TubePreview 1.1.0
 

@@ -40,9 +40,11 @@ A/B preview is a visual comparison tool. It does not run a YouTube experiment, c
 
 ## Download
 
-[**Get the latest signed APK**](https://github.com/notrenflare/TubePreview/releases/latest) for Android 7.0 (API 24) or newer.
+[**Get the signed APK**](https://github.com/notrenflare/TubePreview/releases/download/v1.1.1%2Bunminified/TubePreview-1.1.1.apk) for Android 7.0 (API 24) or newer.
 
-Open the APK on your phone and follow Android's installation prompts. The [release verification record](docs/RELEASE_VERIFICATION.md) includes the APK checksum, signing fingerprint, and VirusTotal report. Install updates over the existing app to keep your saved previews.
+The recommended download is the **1.1.1 unminified build**, with the complete product tour and current feed improvements. It retains the established signing identity, so it can update an existing installation without removing saved previews.
+
+Follow Android's installation prompts. The [release verification record](docs/RELEASE_VERIFICATION.md) includes checksums, signing fingerprints, and dated vendor and installation results.
 
 ## Getting started
 
