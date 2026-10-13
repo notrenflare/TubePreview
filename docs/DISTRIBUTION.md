@@ -1,48 +1,51 @@
 # Distribution
 
-Source, issues, and signed Android releases live in [notrenflare/TubePreview](https://github.com/notrenflare/TubePreview). The source is licensed under [Apache 2.0](../LICENSE).
+Signed Android downloads are published through [GitHub Releases](https://github.com/notrenflare/TubePreview/releases/latest). Source is licensed under [Apache 2.0](../LICENSE).
 
-## Build and sign
+## Build
 
-Always increase `versionCode` for each release and set `versionName` to the public release version. Keep the application ID `com.renflare.tubepreview` and the release signing identity so installed users can update without losing data.
+Set `versionName` and increase `versionCode` for each application update. Preserve
+the application ID `com.renflare.tubepreview` and signing certificate so users can
+update without losing their saved previews.
 
 ```sh
-bash ./gradlew clean :app:testDebugUnitTest :app:lintDebug :app:lintRelease :app:assembleRelease --init-script scripts/release-unminified.init.gradle --no-build-cache --no-configuration-cache
-node scripts/sign-release.mjs app/build/outputs/apk/release/app-release-unsigned.apk /private/tmp/TubePreview-1.1.1-unminified.apk
+bash ./gradlew clean :app:testDebugUnitTest :app:lintDebug :app:lintRelease :app:assembleRelease \
+  --init-script scripts/release-distribution.init.gradle \
+  --no-build-cache --no-configuration-cache
 ```
 
-The recommended APK uses the unminified release configuration in `scripts/release-unminified.init.gradle`. It disables code and resource shrinking while retaining non-debuggable packaging and baseline profiles. Omit that init script to build the optimized configuration. The release includes the init script for use with its recorded source commit.
+The distribution configuration retains non-debuggable release packaging and
+baseline profiles. Code and resource shrinking are disabled.
 
-The maintainer helper reads the existing encrypted identity from macOS Keychain, verifies its certificate, signs the APK, and removes temporary key material. It never generates or rotates keys. It refuses to overwrite an existing output.
+## Sign
 
-Other environments can configure `KEYSTORE_PATH`, `STORE_PASSWORD`, and `KEY_PASSWORD`, using alias `upload`. Without signing configuration, Gradle produces an unsigned release APK. Never publish a debug build or commit signing material.
+Configure `KEYSTORE_PATH`, `STORE_PASSWORD`, and `KEY_PASSWORD`, using alias
+`upload`. Without signing configuration, Gradle produces an unsigned APK.
+Keep signing material outside Git and back it up securely.
 
-## Release certificate
+The maintainer's macOS helper can sign with the existing Keychain identity:
 
-The established certificate SHA-256 fingerprint is:
+```sh
+node scripts/sign-release.mjs app/build/outputs/apk/release/app-release-unsigned.apk /private/tmp/TubePreview-1.1.1.apk
+```
+
+The helper checks the certificate and refuses to overwrite an existing output.
+
+Certificate SHA-256:
 
 ```text
 e18661c71f6047130b297184bdd4d0b4497d372f0570404e89b179a1189774f3
 ```
 
-The signing identity must be backed up securely outside Git. Losing it can prevent existing direct-APK users from installing updates.
+## Publish
 
-## Verification and publication
+1. Build from a committed revision and pass tests, lint, dependency checks, and secret scanning.
+2. Verify the signed APK with `apksigner` and `zipalign`. Check its package, version, permissions, and release flags.
+3. Test the exact APK on a device, including onboarding, imports, comparisons, refresh, both themes, and saved settings.
+4. Generate checksums and complete a VirusTotal analysis for the signed APK.
+5. Publish the verified APK, checksums, and certificate fingerprint. Download the public asset and confirm its checksum.
+6. Update the [verification record](RELEASE_VERIFICATION.md).
 
-1. Commit the release version before building so packaged source metadata identifies the release commit. Run a clean build, unit tests, debug/release lint, resolved-dependency advisory checks, and complete Git-history secret scans.
-2. Verify the signed APK with Android SDK `apksigner verify --verbose --print-certs` and `zipalign`. Check package name, version, minimum SDK, permissions, and non-debuggable status.
-3. Install the exact signed binary on a test device. Check onboarding, image import, avatar framing, comparison cycling, theme switching, refresh, and persisted settings. Record any ordinary installation warning.
-4. Generate a SHA-256 checksum and include the signing certificate fingerprint. Upload this exact APK to VirusTotal and record completed results; engines that cannot process the file are not clean verdicts.
-5. Wait for CI, tag the verified source commit, and publish the release with the signed APK and verification files. Confirm that an anonymous download matches the local checksum and certificate.
-6. If Play Protect flags the APK, submit its package name, exact VirusTotal hash, and public download link through Google's review form. Record submission acknowledgment separately from any review decision or device outcome.
-7. Update the dated release verification record. Repeat binary checks and vendor review for each new APK; results do not transfer between hashes.
-
-Published APKs and release tags are preserved. A separately verified build variant is published under a distinct tag, such as `v1.1.1+unminified`, without replacing an existing binary. The APK retains its application version and signing identity. Documentation may be corrected without replacing a binary.
-
-A scan or earlier provider review is evidence only for that exact binary. Android installation warnings are controlled by the platform; do not claim universal clearance or recommend disabling Play Protect.
-
-## Repository checks
-
-GitHub Actions run build and security checks with read-only permissions and pinned action revisions. Dependabot checks dependency updates weekly. Enable private vulnerability reporting and protect the default branch against force pushes and deletion when supported.
-
-See [CONTRIBUTING.md](../CONTRIBUTING.md) for validation commands and [SECURITY.md](../SECURITY.md) for vulnerability reports.
+Release tags and binaries are immutable. Source and build configuration remain
+available for reproducibility. See [CONTRIBUTING.md](../CONTRIBUTING.md) for checks
+and [SECURITY.md](../SECURITY.md) for vulnerability reports.

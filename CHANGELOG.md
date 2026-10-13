@@ -2,9 +2,9 @@
 
 ## 1.1.1 — 2026-10-13
 
-- Enforce non-debuggable release packaging.
-- Refresh signed distribution assets and release verification.
-- Provide an unminified signed build with the same application features and update compatibility.
+- Include the interactive product tour, channel setup, and title and thumbnail comparisons.
+- Refine feed scrolling, refresh feedback, and light and dark layouts.
+- Update Android downloads and screenshots.
 
 ## 1.1.0 — 2026-10-13
 

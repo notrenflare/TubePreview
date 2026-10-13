@@ -18,52 +18,58 @@
   <img src="https://img.shields.io/badge/Android-7.0%2B-3DDC84?logo=android&amp;logoColor=white" alt="Android 7.0 or newer" />
 </p>
 
-TubePreview is a native Android app for previewing YouTube thumbnails, titles, and channel branding in a realistic home feed. Place your preview among sample videos, scroll past it, and see how it reads at a realistic size. No account or YouTube sign-in required.
+See how your next YouTube video looks in a familiar mobile feed. Add your thumbnail, title, and channel branding, then compare alternatives among sample videos. No account or YouTube sign-in required.
 
-<p align="center">
-  <a href="docs/screenshots/home-dark.png"><img src="docs/screenshots/home-dark.png" width="220" alt="Thumbnail preview in the dark home feed" /></a>
-  <a href="docs/screenshots/home-light.png"><img src="docs/screenshots/home-light.png" width="220" alt="Thumbnail preview in the light home feed" /></a>
-  <a href="docs/screenshots/ab-preview.png"><img src="docs/screenshots/ab-preview.png" width="220" alt="Three-option title and thumbnail comparison" /></a>
-  <a href="docs/screenshots/onboarding.png"><img src="docs/screenshots/onboarding.png" width="220" alt="First-run product tour" /></a>
-</p>
+<table align="center">
+  <tr>
+    <td align="center"><strong>Dark feed</strong><br /><br /><a href="docs/screenshots/home-dark.png"><img src="docs/screenshots/home-dark.png" width="220" alt="YouTube-style thumbnail preview in dark mode" /></a></td>
+    <td align="center"><strong>Light feed</strong><br /><br /><a href="docs/screenshots/home-light.png"><img src="docs/screenshots/home-light.png" width="220" alt="The same thumbnail preview in light mode" /></a></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>A/B preview</strong><br /><br /><a href="docs/screenshots/ab-preview.png"><img src="docs/screenshots/ab-preview.png" width="220" alt="Three ready title options in the A/B preview editor" /></a></td>
+    <td align="center"><strong>Interactive tour</strong><br /><br /><a href="docs/screenshots/onboarding.png"><img src="docs/screenshots/onboarding.png" width="220" alt="The introductory slide of the interactive product tour" /></a></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Your channel</strong><br /><br /><a href="docs/screenshots/customize.png"><img src="docs/screenshots/customize.png" width="220" alt="Channel and video customization settings" /></a></td>
+    <td align="center"><strong>Sample Shorts</strong><br /><br /><a href="docs/screenshots/shorts.png"><img src="docs/screenshots/shorts.png" width="220" alt="Sample Shorts in the surrounding feed" /></a></td>
+  </tr>
+</table>
 
 ## Features
 
-- **Preview in context.** Full-width thumbnails, channel avatars, titles, and compact video metadata in a familiar mobile feed.
-- **Compare up to three options.** Try titles, thumbnails, or paired combinations. Pull to refresh to cycle through ready options, or select one directly.
-- **Make it yours.** Set your channel name, crop and reposition your avatar, and customize views and duration.
-- **Refresh the surroundings.** Shuffle sample videos and Shorts, adjust feed size, and control how often your preview appears.
-- **Get started quickly.** An interactive first-run tour introduces channel setup, title and thumbnail options, and feed refresh.
-- **Check both themes.** Switch between light and dark mode with matching navigation and status-bar behavior.
+- **Preview in a YouTube-style feed.** Check thumbnails, title wrapping, channel avatars, and video metadata at a realistic size.
+- **Compare up to three options.** Try titles, thumbnails, or both. Pull to refresh to cycle through your choices.
+- **Make it your channel.** Customize your name, crop your photo, and set video views and duration.
+- **Change the surroundings.** Shuffle sample videos and Shorts, adjust feed size, and choose how often your preview appears.
+- **Learn by trying.** An interactive tour walks through previews, comparisons, refresh, and channel setup.
+- **Check light and dark mode.** Review your thumbnail in both themes.
 
-A/B preview is a visual comparison tool. It does not run a YouTube experiment, collect viewer responses, or predict click-through rates.
+A/B preview compares appearance; it does not run a YouTube experiment or predict click-through rates.
 
 ## Download
 
-[**Get the signed APK**](https://github.com/notrenflare/TubePreview/releases/download/v1.1.1%2Bunminified/TubePreview-1.1.1.apk) for Android 7.0 (API 24) or newer.
+[**Download TubePreview for Android**](https://github.com/notrenflare/TubePreview/releases/latest/download/TubePreview-1.1.1.apk)
 
-The recommended download is the **1.1.1 unminified build**, with the complete product tour and current feed improvements. It retains the established signing identity, so it can update an existing installation without removing saved previews.
-
-Follow Android's installation prompts. The [release verification record](docs/RELEASE_VERIFICATION.md) includes checksums, signing fingerprints, and dated vendor and installation results.
+Requires Android 7.0 or newer. Download the APK and follow Android's installation prompts.
 
 ## Getting started
 
-1. Set your channel name and optionally choose a channel photo.
-2. Open **Your custom feed** and select a thumbnail, then enter your title and metadata.
-3. Return to the feed to review your card among sample videos.
-4. Enable **A/B preview** to add options B and C. Choose **Titles**, **Thumbnails**, or **Both**, then refresh the feed to compare.
+1. Set your channel name and optionally add a photo.
+2. Open **Your custom feed** to choose a thumbnail and enter your title.
+3. Return to the home feed to see your video among the samples.
+4. Enable **A/B preview**, add your alternatives, and pull to refresh to compare.
 
-Images can be up to 2 MB each. A 1280 × 720 thumbnail works well for the 16:9 preview.
+Images can be up to 2 MB each. Use a 16:9 thumbnail; 1280 × 720 works well.
 
 ## Privacy
 
-Your imported images and settings stay in private storage on your device. TubePreview has no analytics, ads, backend, or upload service. Sample feed photos load from Unsplash over HTTPS, so that provider receives ordinary network request metadata.
+Your imported images and settings stay on your device. No analytics, ads, or account required. Sample feed photos load from Unsplash over HTTPS. Uninstalling or clearing app data removes saved previews.
 
-App data is excluded from Android backup and device transfer. Clearing app data or uninstalling removes your saved previews. See the [privacy policy](docs/PRIVACY.md) for details.
+See the [privacy policy](docs/PRIVACY.md) for details.
 
 ## Build from source
 
-Use Android Studio, JDK 21, and Android SDK Platform 37. The Gradle wrapper supplies the Gradle version.
+Use Android Studio, JDK 21, and Android SDK Platform 37.
 
 ```sh
 git clone https://github.com/notrenflare/TubePreview.git
@@ -77,16 +83,16 @@ Run the `app` configuration on a device or emulator. No API keys or backend setu
 bash ./gradlew :app:testDebugUnitTest :app:lintDebug
 ```
 
-Built with Kotlin, Jetpack Compose, Preferences DataStore, coroutines, and Coil. The [architecture guide](docs/ARCHITECTURE.md) describes the main modules.
+Built with Kotlin, Jetpack Compose, DataStore, coroutines, and Coil. See the [architecture guide](docs/ARCHITECTURE.md) and [distribution guide](docs/DISTRIBUTION.md).
 
 ## Contributing
 
-Bug reports and focused improvements are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup and checks. Report vulnerabilities through the [security policy](SECURITY.md).
+Bug reports and focused improvements are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup and checks, or the [security policy](SECURITY.md) to report a vulnerability.
 
 ## License
 
-TubePreview is open source under the [Apache License 2.0](LICENSE). You can use, modify, and redistribute it, including commercially, subject to the license terms. Third-party assets retain their own licenses. The license does not grant trademark rights to the TubePreview name or logo.
+[Apache License 2.0](LICENSE). Third-party assets retain their own licenses; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). The license does not grant trademark rights to the TubePreview name or logo.
 
-TubePreview is an independent project and is not affiliated with YouTube or Google. YouTube and YouTube Shorts are trademarks of Google LLC. Third-party asset credits are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+TubePreview is independent and is not affiliated with YouTube or Google. YouTube and YouTube Shorts are trademarks of Google LLC.
 
 Made with ❤️ by [renflare](https://github.com/notrenflare), with contributions from [Codex](https://github.com/codex).
