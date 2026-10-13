@@ -17,6 +17,7 @@ import com.renflare.tubepreview.ui.theme.TubePreviewTheme
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -24,9 +25,13 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
+@org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
 @Config(sdk = [36], qualifiers = "w360dp-h780dp-xxhdpi")
 class SettingsDialogTest {
     @get:Rule val compose = createComposeRule()
+
+    private fun textStart(label: String): Float =
+        compose.onNodeWithText(label, useUnmergedTree = true).fetchSemanticsNode().boundsInRoot.left
 
     @Test fun longBodyScrollsWithoutHidingActionsAtLargeFontInBothThemes() {
         val dark = mutableStateOf(false)
@@ -59,6 +64,7 @@ class SettingsDialogTest {
         val settings = runBlocking { SettingsRepository(context).settingsFlow.first() }
         val dark = mutableStateOf(false)
         var resets = 0
+        var tours = 0
         compose.setContent {
             TubePreviewTheme(darkTheme = dark.value) {
                 SettingsScreen(
@@ -67,7 +73,7 @@ class SettingsDialogTest {
                     onUpdateThumbnail = {}, onUpdateDarkMode = {}, onUpdateFeedSize = {},
                     onUpdatePreviewTitle = {}, onUpdatePreviewViews = {}, onUpdatePreviewDuration = {},
                     onUpdatePreviewInterval = {}, onUpdatePlaceholderDefaults = { _, _, _ -> },
-                    onResetAll = { resets++ }
+                    onResetAll = { resets++ }, onReplayTour = { tours++ }
                 )
             }
         }
@@ -80,8 +86,26 @@ class SettingsDialogTest {
             compose.onNodeWithTag("reset_metadata_btn").performClick()
             compose.onNodeWithText("Reset").assertIsDisplayed().performClick()
             compose.runOnIdle { assertEquals(if (theme) 2 else 1, resets) }
-            compose.onNodeWithTag("settings_asset_licenses").performScrollTo().performClick()
+            val tour = compose.onNodeWithTag("settings_product_tour").performScrollTo()
+            val tourBounds = tour.getUnclippedBoundsInRoot()
+            val screenBounds = compose.onRoot().getUnclippedBoundsInRoot()
+            assertTrue("Tour feedback wraps its icon and label",
+                (tourBounds.right - tourBounds.left) < (screenBounds.right - screenBounds.left) * 0.8f)
+            tour.performClick()
+            compose.runOnIdle { assertEquals(if (theme) 2 else 1, tours) }
+            val licenses = compose.onNodeWithTag("settings_asset_licenses").performScrollTo()
+            val licenseBounds = licenses.getUnclippedBoundsInRoot()
+            assertTrue("License feedback wraps its icon and label",
+                (licenseBounds.right - licenseBounds.left) < (screenBounds.right - screenBounds.left) * 0.8f)
+            licenses.performClick()
             compose.onNodeWithTag("asset_licenses_dialog").assertIsDisplayed()
+            val descriptionStart = textStart(
+                "Free icons from Streamline, adapted for TubePreview. Licensed under CC BY 4.0."
+            )
+            for (label in listOf("TubePreview · Apache License 2.0", "Streamline",
+                "Creative Commons Attribution 4.0", "Nunito · Open Font License")) {
+                assertEquals("License text aligns with $label", descriptionStart, textStart(label), 1.5f)
+            }
             compose.onNodeWithText("TubePreview · Apache License 2.0").performClick()
             compose.onNodeWithTag("app_license_dialog").assertIsDisplayed()
             compose.onNodeWithText("Done").assertIsDisplayed().performClick()

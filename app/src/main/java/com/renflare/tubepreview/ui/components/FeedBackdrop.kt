@@ -48,7 +48,8 @@ fun rememberFeedBackdrop(): FeedBackdrop {
 }
 
 fun Modifier.feedBackdropSource(backdrop: FeedBackdrop, listState: LazyListState): Modifier =
-    onGloballyPositioned { backdrop.position = it.positionInRoot() }
+    // The translucent fallback does not sample the feed or need a hardware layer.
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) this else onGloballyPositioned { backdrop.position = it.positionInRoot() }
         .drawWithContent {
             // Lazy items can move in retained child layers without redrawing their parent.
             // Observe scroll here so the sampled strip always follows the visible feed.
@@ -76,22 +77,30 @@ fun Modifier.feedBackdrop(backdrop: FeedBackdrop, tint: Color): Modifier {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
                 backdrop.layer.size.width > 0 && backdrop.layer.size.height > 0
             ) {
-                val padding = ceil(radius * 2).toInt()
                 val offset = position - backdrop.position
-                // Never pad past the recorded feed: transparent pixels there would fade
-                // the blur and reveal sharp content underneath the navigation inset.
-                // Clamp the blur at the actual feed edge, including while the bar slides.
+                val sourceWidth = backdrop.layer.size.width.toFloat()
                 val sourceHeight = backdrop.layer.size.height.toFloat()
-                val sampleTop = floor(offset.y - padding).coerceIn(0f, sourceHeight - 1f)
-                val sampleBottom = ceil(offset.y + size.height + padding)
-                    .coerceIn(sampleTop + 1f, sourceHeight)
-                blurred.renderEffect = effect
-                blurred.clip = true
-                blurred.record(size = IntSize(size.width.toInt(), (sampleBottom - sampleTop).toInt())) {
-                    translate(-offset.x, -sampleTop) { drawLayer(backdrop.layer) }
-                }
-                clipRect {
-                    translate(top = sampleTop - offset.y) { drawLayer(blurred) }
+                // Hidden chrome must not prepare an offscreen effect. Keep the source
+                // live so visible controls and returning bars sample the current feed.
+                if (offset.y < sourceHeight && offset.y + size.height > 0f &&
+                    offset.x < sourceWidth && offset.x + size.width > 0f
+                ) {
+                    val padding = ceil(radius * 2).toInt()
+                    // Keep the render target's size stable while the bar slides. Shift
+                    // the sampling window inside the feed instead of padding with alpha.
+                    val edgePadding = if (offset.y <= padding ||
+                        offset.y + size.height + padding >= sourceHeight) padding else padding * 2
+                    val sampleHeight = minOf(sourceHeight.toInt(), ceil(size.height + edgePadding).toInt())
+                        .coerceAtLeast(1)
+                    val sampleTop = floor(offset.y - padding).coerceIn(0f, sourceHeight - sampleHeight)
+                    blurred.renderEffect = effect
+                    blurred.clip = true
+                    blurred.record(size = IntSize(size.width.toInt(), sampleHeight)) {
+                        translate(-offset.x, -sampleTop) { drawLayer(backdrop.layer) }
+                    }
+                    clipRect {
+                        translate(top = sampleTop - offset.y) { drawLayer(blurred) }
+                    }
                 }
             }
             drawRect(tint)

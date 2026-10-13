@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -37,6 +38,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.renflare.tubepreview.ui.components.BrandLogo
+import com.renflare.tubepreview.ui.components.FeedFeedbackHost
+import com.renflare.tubepreview.ui.components.rememberFeedFeedbackState
 import com.renflare.tubepreview.ui.components.FeedStatusBarProtection
 import com.renflare.tubepreview.ui.components.FeedInteractions
 import com.renflare.tubepreview.ui.components.FeedIconButton
@@ -81,7 +84,8 @@ fun HomeScreen(
     shortsFeed: List<FeedShort> = MockShortFeed.initial(),
     onSelectVariant: (Int) -> Unit = {}
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
+    val feedback = rememberFeedFeedbackState()
+    val openSettings = { feedback.dismiss(); onNavigateToSettings() }
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
     val pullToRefreshState = rememberPullToRefreshState()
@@ -209,19 +213,19 @@ fun HomeScreen(
                                     FeedIconButton(
                                         icon = ImageVector.vectorResource(R.drawable.feed_chats),
                                         contentDescription = "Your preview settings",
-                                        onClick = onNavigateToSettings,
+                                        onClick = openSettings,
                                         modifier = Modifier.testTag("home_preview_settings")
                                     )
                                     FeedIconButton(
                                         icon = ImageVector.vectorResource(R.drawable.feed_notifications),
                                         contentDescription = "Notifications",
-                                        onClick = { scope.launch { snackbarHostState.showSnackbar("No notifications yet") } },
+                                        onClick = { feedback.show("No notifications yet") },
                                         modifier = Modifier.testTag("home_notifications")
                                     )
                                     FeedIconButton(
                                         icon = ImageVector.vectorResource(R.drawable.feed_search),
                                         contentDescription = "Search videos",
-                                        onClick = { scope.launch { snackbarHostState.showSnackbar("Search is not available in the preview feed") } },
+                                        onClick = { feedback.show("Search is not available in the preview feed") },
                                         modifier = Modifier.testTag("home_search")
                                     )
                                 }
@@ -244,7 +248,7 @@ fun HomeScreen(
                                 item(key = "custom_feed") {
                                     FeedCategoryChip(
                                         selected = false,
-                                        onClick = onNavigateToSettings,
+                                        onClick = openSettings,
                                         text = "Your custom feed",
                                         leadingIcon = ImageVector.vectorResource(R.drawable.feed_custom),
                                         modifier = Modifier.testTag("home_custom_feed")
@@ -302,7 +306,7 @@ fun HomeScreen(
                                                 fontWeight = if (settings.activePreviewIndex() == index) FontWeight.Bold else FontWeight.Normal)
                                         }
                                     }
-                                    FeedIconButton(Icons.Outlined.Edit, "Edit A/B options", onNavigateToSettings)
+                                    FeedIconButton(Icons.Outlined.Edit, "Edit A/B options", openSettings)
                                 }
                             }
                             Row(
@@ -331,11 +335,9 @@ fun HomeScreen(
                                                 indication = ripple(bounded = false, radius = 36.dp, color = feedFeedbackColor())
                                             ) {
                                                 when {
-                                                    isYou || isCreate -> onNavigateToSettings()
+                                                    isYou || isCreate -> openSettings()
                                                     title == "Home" -> scope.launch { listState.animateScrollToItem(0) }
-                                                    title != "Home" -> scope.launch {
-                                                        snackbarHostState.showSnackbar("$title is a preview section")
-                                                    }
+                                                    title != "Home" -> feedback.show("$title is a preview section")
                                                 }
                                             }
                                             .semantics { selected = title == "Home" }
@@ -388,7 +390,7 @@ fun HomeScreen(
                             }
                         }
                     },
-                    snackbarHost = { SnackbarHost(snackbarHostState) }
+                    snackbarHost = { FeedFeedbackHost(feedback, backdrop, settings.isDarkMode) }
                 ) { innerPadding ->
                     FeedPullToRefreshBox(
                         isRefreshing = isRefreshing,
@@ -439,40 +441,43 @@ fun HomeScreen(
                                 val topVideos = videoFeed.take(6)
                                 items(
                                     items = topVideos,
-                                    key = { video -> "top_${video.id}" }
+                                    key = { video -> "top_${video.id}" },
+                                    contentType = { "video" }
                                 ) { video ->
                                     VideoCard(
                                         video = video,
                                         onVideoClick = {
                                             if (video.isUserPreview) {
-                                                scope.launch {
-                                                    snackbarHostState.showSnackbar("Opening Settings to edit your preview...")
-                                                }
-                                                onNavigateToSettings()
+                                                openSettings()
                                             } else {
-                                                scope.launch {
-                                                    snackbarHostState.showSnackbar(
-                                                        message = "Demo item: '${video.title}'",
-                                                        withDismissAction = true
-                                                    )
-                                                }
+                                                feedback.show("Demo video · ${video.title}")
                                             }
                                         }
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
                                 }
 
-                                // Two-column Shorts shelf.
-                                item {
-                                    ShortsShelfView(
-                                        shorts = shortsFeed,
-                                        onShortClick = { shortTitle ->
-                                            scope.launch {
-                                                snackbarHostState.showSnackbar("Opening Short: $shortTitle")
-                                            }
-                                        }
+                                // Prepare each row separately without changing the shelf's layout.
+                                item(key = "shorts_header", contentType = "shorts_header") {
+                                    ShortsShelfHeader(
+                                        onShortClick = { feedback.show("Demo Short · $it") },
+                                        modifier = Modifier.fillMaxWidth()
+                                            .padding(start = 12.dp, end = 12.dp, top = 8.dp)
+                                            .testTag("home_shorts_shelf")
                                     )
-                                    Spacer(modifier = Modifier.height(12.dp))
+                                }
+                                itemsIndexed(
+                                    shortsFeed.chunked(2),
+                                    key = { _, row -> "shorts_row_${row.joinToString("_") { it.id }}" },
+                                    contentType = { _, _ -> "shorts_row" }
+                                ) { index, row ->
+                                    ShortsShelfRow(row, { feedback.show("Demo Short · $it") },
+                                        Modifier.fillMaxWidth()
+                                            .padding(horizontal = 12.dp)
+                                            .padding(top = if (index == 0) 0.dp else 8.dp))
+                                }
+                                item(key = "shorts_spacing", contentType = "shorts_spacing") {
+                                    Spacer(Modifier.height(20.dp))
                                 }
 
                                 // 3. The remaining items of the stream (which includes user's trailing previews)
@@ -480,23 +485,16 @@ fun HomeScreen(
                                     val trailingVideos = videoFeed.drop(6)
                                     items(
                                         items = trailingVideos,
-                                        key = { video -> "trail_${video.id}" }
+                                        key = { video -> "trail_${video.id}" },
+                                        contentType = { "video" }
                                     ) { video ->
                                         VideoCard(
                                             video = video,
                                             onVideoClick = {
                                                 if (video.isUserPreview) {
-                                                    scope.launch {
-                                                        snackbarHostState.showSnackbar("Opening Settings to edit your preview...")
-                                                    }
-                                                    onNavigateToSettings()
+                                                    openSettings()
                                                 } else {
-                                                    scope.launch {
-                                                        snackbarHostState.showSnackbar(
-                                                            message = "Demo item: '${video.title}'",
-                                                            withDismissAction = true
-                                                        )
-                                                    }
+                                                    feedback.show("Demo video · ${video.title}")
                                                 }
                                             }
                                         )
@@ -581,35 +579,40 @@ fun ShortsShelfView(
         modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)
             .testTag("home_shorts_shelf")
     ) {
-        Row(
-            Modifier.fillMaxWidth().height(44.dp).padding(start = 4.dp, bottom = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            ShortsIcon(modifier = Modifier.size(36.dp))
-            Spacer(Modifier.width(12.dp))
-            Text(
-                "Shorts", fontSize = 18.sp, lineHeight = 21.sp, fontFamily = FontFamily.SansSerif,
-                letterSpacing = 0.12.sp,
-                fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.weight(1f).offset(y = 1.dp)
-            )
-            FeedIconButton(
-                Icons.Outlined.MoreHoriz, "Shorts options",
-                onClick = { onShortClick("Shorts options") },
-                modifier = Modifier.offset(x = 2.dp).size(36.dp)
-            )
-        }
+        ShortsShelfHeader(onShortClick)
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            shorts.chunked(2).forEach { pair ->
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    pair.forEach { short ->
-                        ShortCardItem(
-                            short = short,
-                            onShortClick = onShortClick, modifier = Modifier.weight(1f)
-                        )
-                    }
-                }
-            }
+            shorts.chunked(2).forEach { pair -> ShortsShelfRow(pair, onShortClick) }
+        }
+    }
+}
+
+@Composable
+private fun ShortsShelfHeader(onShortClick: (String) -> Unit, modifier: Modifier = Modifier) {
+    Row(
+        modifier.fillMaxWidth().height(44.dp).padding(start = 4.dp, bottom = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        ShortsIcon(modifier = Modifier.size(36.dp))
+        Spacer(Modifier.width(12.dp))
+        Text(
+            "Shorts", fontSize = 18.sp, lineHeight = 21.sp, fontFamily = FontFamily.SansSerif,
+            letterSpacing = 0.12.sp,
+            fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.weight(1f).offset(y = 1.dp)
+        )
+        FeedIconButton(
+            Icons.Outlined.MoreHoriz, "Shorts options",
+            onClick = { onShortClick("Shorts options") },
+            modifier = Modifier.offset(x = 2.dp).size(36.dp)
+        )
+    }
+}
+
+@Composable
+private fun ShortsShelfRow(shorts: List<FeedShort>, onShortClick: (String) -> Unit, modifier: Modifier = Modifier) {
+    Row(modifier, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        shorts.forEach { short ->
+            ShortCardItem(short, onShortClick, Modifier.weight(1f))
         }
     }
 }
@@ -624,6 +627,7 @@ fun ShortCardItem(
     Card(
         shape = RoundedCornerShape(8.dp),
         modifier = modifier.fillMaxWidth().aspectRatio(2f / 3f)
+            .testTag("home_short_${short.id}")
             .clickable { onShortClick(title) }
     ) {
         Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceVariant)) {

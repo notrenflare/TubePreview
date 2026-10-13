@@ -39,15 +39,16 @@ class OnboardingThemeTest {
                 )
             }
         }
+        compose.onNodeWithTag("onboarding_skip").performClick()
         compose.onNodeWithTag("onboarding_name_input").performTextReplacement("  My channel  ")
-        compose.onNodeWithContentDescription("Switch to light mode").performScrollTo().performClick()
+        compose.onNodeWithContentDescription("Switch to light mode").performClick()
         compose.onNodeWithContentDescription("Switch to dark mode").assertHasClickAction()
         compose.onNodeWithTag("onboarding_name_input").assertTextContains("  My channel  ")
         compose.runOnIdle { assertEquals(false, settings.value.isDarkMode) }
 
-        compose.onNodeWithContentDescription("Switch to dark mode").performScrollTo().performClick()
+        compose.onNodeWithContentDescription("Switch to dark mode").performClick()
         compose.onNodeWithContentDescription("Switch to light mode").assertExists()
-        compose.onNodeWithTag("onboarding_save_button").performScrollTo().performClick()
+        compose.onNodeWithTag("onboarding_save_button").performClick()
         compose.runOnIdle {
             assertEquals(true, settings.value.isDarkMode)
             assertEquals("My channel", savedName)

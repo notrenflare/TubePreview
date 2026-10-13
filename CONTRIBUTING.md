@@ -35,6 +35,12 @@ gitleaks git --redact=100 --log-opts="--all" .
 
 Unit and Compose UI tests run with Robolectric. The device test under `app/src/androidTest/` runs separately on a connected emulator or device.
 
+## Scroll performance
+
+Measure scrolling on a physical device using an optimized release build. Debug builds include development overhead and are unsuitable for comparing frame timing. Keep feed content, display settings, gesture distance, and image-cache state consistent between runs. Use Perfetto FrameTimeline to distinguish app deadline misses from compositor misses; report repeated runs rather than a single percentile.
+
+`app/src/main/baseline-prof.txt` contains observed startup and home-scroll paths. Regenerate it after substantial changes to these paths using Android's [Baseline Profile workflow](https://developer.android.com/topic/performance/baselineprofiles/create-baselineprofile). Exercise startup, long-form cards, both Shorts rows, and scrolling in both directions. Collect with an unminified, non-debuggable release, restore release optimization, and verify the generated APK includes `assets/dexopt/baseline.prof`. Validate both an ordinary install and profile-guided compilation; forced compilation alone does not represent every first launch.
+
 ## Project layout
 
 | Location | Purpose |

@@ -76,7 +76,8 @@ fun SettingsScreen(
     onVariantTitle: (Int, String) -> Unit = { _, _ -> },
     onVariantThumbnail: (Int, Uri) -> Unit = { _, _ -> },
     onClearVariant: (Int) -> Unit = {},
-    onSelectVariant: (Int) -> Unit = {}
+    onSelectVariant: (Int) -> Unit = {},
+    onReplayTour: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     val context = LocalContext.current
@@ -117,7 +118,8 @@ fun SettingsScreen(
                 showAssetLicenses = false
                 showAppLicense = true
             }) { Text("TubePreview · Apache License 2.0") }
-            Text("Free icons from Streamline, adapted for TubePreview. Licensed under CC BY 4.0.")
+            Text("Free icons from Streamline, adapted for TubePreview. Licensed under CC BY 4.0.",
+                modifier = Modifier.padding(horizontal = 12.dp))
             TextButton(onClick = { uriHandler.openUri("https://streamlinehq.com") }) {
                 Text("Streamline")
             }
@@ -733,8 +735,19 @@ fun SettingsScreen(
             }
 
             TextButton(
+                onClick = onReplayTour,
+                modifier = Modifier.align(Alignment.CenterHorizontally).heightIn(min = 48.dp)
+                    .testTag("settings_product_tour")
+            ) {
+                Icon(PlumpIcons.Stars, null, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.width(8.dp))
+                Text("Product tour")
+            }
+
+            TextButton(
                 onClick = { showAssetLicenses = true },
-                modifier = Modifier.fillMaxWidth().testTag("settings_asset_licenses")
+                modifier = Modifier.align(Alignment.CenterHorizontally).heightIn(min = 48.dp)
+                    .testTag("settings_asset_licenses")
             ) {
                 Icon(PlumpIcons.Feed, null, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(8.dp))

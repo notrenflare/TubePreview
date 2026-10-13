@@ -26,6 +26,7 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 // The native SwipeRefreshLayout travel is 64dp, with a 40dp disc starting above the feed.
@@ -39,12 +40,13 @@ internal fun FeedPullToRefreshBox(
     onRefresh: () -> Unit,
     state: PullToRefreshState,
     modifier: Modifier = Modifier,
+    threshold: Dp = RefreshTravel,
     indicator: @Composable BoxScope.() -> Unit,
     content: @Composable BoxScope.() -> Unit
 ) {
     Box(modifier.pullToRefresh(
         isRefreshing = isRefreshing, state = state,
-        threshold = RefreshTravel, onRefresh = onRefresh
+        threshold = threshold, onRefresh = onRefresh
     )) {
         content()
         indicator()

@@ -8,7 +8,7 @@ Always increase `versionCode` for each release and set `versionName` to the publ
 
 ```sh
 bash ./gradlew :app:testDebugUnitTest :app:assembleRelease :app:lintRelease
-node scripts/sign-release.mjs app/build/outputs/apk/release/app-release-unsigned.apk /private/tmp/TubePreview-1.0.apk
+node scripts/sign-release.mjs app/build/outputs/apk/release/app-release-unsigned.apk /private/tmp/TubePreview-1.1.0.apk
 ```
 
 The maintainer helper reads the existing encrypted identity from macOS Keychain, verifies its certificate, signs the APK, and removes temporary key material. It never generates or rotates keys. It refuses to overwrite an existing output.

@@ -27,11 +27,49 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
+@OptIn(com.github.takahirom.roborazzi.ExperimentalRoborazziApi::class)
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [36], qualifiers = "w360dp-h780dp-xxhdpi")
 class FeedBackdropTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun returningBarSamplesContentThatChangedWhileItWasHidden() {
+        val hidden = mutableStateOf(false)
+        val feedColor = mutableStateOf(Color.Red)
+        compose.setContent {
+            val backdrop = rememberFeedBackdrop()
+            val list = rememberLazyListState()
+            Box(Modifier.fillMaxSize().clipToBounds().testTag("scene")) {
+                Box(Modifier.fillMaxSize().feedBackdropSource(backdrop, list).drawBehind {
+                    drawRect(feedColor.value)
+                })
+                Box(Modifier.align(Alignment.BottomCenter).offset(y = if (hidden.value) 80.dp else 0.dp)
+                    .fillMaxWidth().height(80.dp)
+                    .feedBackdrop(backdrop, Color(0xFF0F0F0F).copy(alpha = .72f)))
+            }
+        }
+        val file = File.createTempFile("feed-backdrop-return", ".png")
+        val options = RoborazziOptions(taskType = RoborazziTaskType.Record)
+        try {
+            compose.onNodeWithTag("scene").captureRoboImage(file.absolutePath, roborazziOptions = options)
+            compose.runOnIdle { hidden.value = true; feedColor.value = Color.Blue }
+            compose.onNodeWithTag("scene").captureRoboImage(file.absolutePath, roborazziOptions = options)
+            var bitmap = BitmapFactory.decodeFile(file.absolutePath)
+            assertTrue("Hidden chrome leaves the feed unobscured",
+                bitmap.getPixel(bitmap.width / 2, bitmap.height - 10) == android.graphics.Color.BLUE)
+            bitmap.recycle()
+            compose.runOnIdle { hidden.value = false }
+            compose.onNodeWithTag("scene").captureRoboImage(file.absolutePath, roborazziOptions = options)
+            bitmap = BitmapFactory.decodeFile(file.absolutePath)
+            val pixel = bitmap.getPixel(bitmap.width / 2, bitmap.height - 10)
+            assertTrue("The returning blur uses the latest feed",
+                android.graphics.Color.blue(pixel) >= 80 &&
+                    android.graphics.Color.red(pixel) in 8..20 &&
+                    android.graphics.Color.green(pixel) in 8..20)
+            bitmap.recycle()
+        } finally { file.delete() }
+    }
 
     @Test fun blurStaysInsideTheBarIncludingItsBottomInset() {
         val dark = mutableStateOf(false)

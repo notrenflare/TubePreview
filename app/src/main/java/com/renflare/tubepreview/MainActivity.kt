@@ -90,12 +90,25 @@ class MainActivity : ComponentActivity() {
                                             uri?.let { viewModel.setProfilePictureFromUri(it) }
                                         },
                                         onToggleTheme = viewModel::setDarkMode,
+                                        animationsReady = splashComplete,
                                         onNavigateNext = {
                                             viewModel.setIsOnboarded(true)
                                             navController.navigate("home") {
                                                 popUpTo("onboarding") { inclusive = true }
                                             }
                                         }
+                                    )
+                                }
+                                composable("tour") {
+                                    OnboardingScreen(
+                                        settings = settings,
+                                        onSaveProfile = { name, uri ->
+                                            viewModel.setChannelName(name)
+                                            uri?.let { viewModel.setProfilePictureFromUri(it) }
+                                        },
+                                        onToggleTheme = viewModel::setDarkMode,
+                                        animationsReady = splashComplete,
+                                        onNavigateNext = { navController.popBackStack() }
                                     )
                                 }
                                 composable("home") {
@@ -127,6 +140,7 @@ class MainActivity : ComponentActivity() {
                                             viewModel.updatePlaceholderDefaults(title, views, duration)
                                         },
                                         onResetAll = { viewModel.resetAllSettings() },
+                                        onReplayTour = { navController.navigate("tour") { launchSingleTop = true } },
                                         onUpdateAvatarCrop = viewModel::setAvatarCrop,
                                         onABEnabled = { viewModel.setABEnabled(it) },
                                         onABMode = { viewModel.setABMode(it) },

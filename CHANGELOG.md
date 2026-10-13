@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0 — 2026-10-13
+
+- Add an interactive first-run tour with customizable channel setup.
+- Refine title and thumbnail comparisons, refresh feedback, and feed scrolling.
+- Improve onboarding, settings, and third-party license layouts.
+
 ## 1.0 — 2026-10-11
 
 - Preview thumbnails, titles, and channel branding in a customizable mobile feed.

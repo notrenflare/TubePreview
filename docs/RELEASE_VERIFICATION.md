@@ -1,5 +1,46 @@
 # Release verification
 
+## TubePreview 1.1.0
+
+Verification date: **2026-10-13**. These results apply to the signed APK attached to [release v1.1.0](https://github.com/notrenflare/TubePreview/releases/tag/v1.1.0).
+
+| Property | Value |
+| --- | --- |
+| File | `TubePreview-1.1.0.apk` |
+| Package | `com.renflare.tubepreview` |
+| Version | `1.1.0` (version code `4`) |
+| Size | 2,132,972 bytes |
+| Minimum / target Android API | 24 / 37 |
+| Source tag | [`v1.1.0`](https://github.com/notrenflare/TubePreview/tree/v1.1.0) |
+
+APK SHA-256:
+
+```text
+14d570e7764e6dad3188144bde5ebb9380f1a517306c434c7acf5382e0171f64
+```
+
+Signing certificate SHA-256:
+
+```text
+e18661c71f6047130b297184bdd4d0b4497d372f0570404e89b179a1189774f3
+```
+
+## Checks
+
+- `:app:testDebugUnitTest`, `:app:lintDebug`, and `:app:assembleRelease` passed.
+- Android SDK `apksigner` verified the APK signatures and release certificate; the APK installed on a Pixel 10a emulator.
+- The packaged manifest remains non-debuggable, disables backup and cleartext traffic, and requests `INTERNET` as its only platform permission. AndroidX also declares an internal signature-level receiver permission.
+
+## Security vendor analysis
+
+[VirusTotal report for this APK](https://www.virustotal.com/gui/file/14d570e7764e6dad3188144bde5ebb9380f1a517306c434c7acf5382e0171f64)
+
+At **2026-10-13 11:12:45 UTC**, the report showed **0 detections**. Seven engines could not process the APK file type; those results are not counted as clean verdicts.
+
+A Play Protect appeal for this package and APK hash was submitted on **2026-10-13**. Google's form states that decisions are final and no response will be sent; the submission is not a platform clearance or guarantee against future warnings.
+
+These are dated observations for this exact binary, not a guarantee of safety or platform approval. Vendor results can change, and Android installation prompts are determined separately by Google Play Protect. Follow Android's security checks rather than disabling them.
+
 ## TubePreview 1.0
 
 Verification date: **2026-10-11**. These results apply to the signed APK attached to [release v1.0](https://github.com/notrenflare/TubePreview/releases/tag/v1.0).

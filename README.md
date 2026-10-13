@@ -24,6 +24,7 @@ TubePreview is a native Android app for previewing YouTube thumbnails, titles, a
   <a href="docs/screenshots/home-dark.png"><img src="docs/screenshots/home-dark.png" width="220" alt="Thumbnail preview in the dark home feed" /></a>
   <a href="docs/screenshots/home-light.png"><img src="docs/screenshots/home-light.png" width="220" alt="Thumbnail preview in the light home feed" /></a>
   <a href="docs/screenshots/ab-preview.png"><img src="docs/screenshots/ab-preview.png" width="220" alt="Three-option title and thumbnail comparison" /></a>
+  <a href="docs/screenshots/onboarding.png"><img src="docs/screenshots/onboarding.png" width="220" alt="First-run product tour" /></a>
 </p>
 
 ## Features
@@ -32,7 +33,8 @@ TubePreview is a native Android app for previewing YouTube thumbnails, titles, a
 - **Compare up to three options.** Try titles, thumbnails, or paired combinations. Pull to refresh to cycle through ready options, or select one directly.
 - **Make it yours.** Set your channel name, crop and reposition your avatar, and customize views and duration.
 - **Refresh the surroundings.** Shuffle sample videos and Shorts, adjust feed size, and control how often your preview appears.
-- **Check both themes.** Light and dark mode, with translucent navigation and scrolling status-bar protection.
+- **Get started quickly.** An interactive first-run tour introduces channel setup, title and thumbnail options, and feed refresh.
+- **Check both themes.** Switch between light and dark mode with matching navigation and status-bar behavior.
 
 A/B preview is a visual comparison tool. It does not run a YouTube experiment, collect viewer responses, or predict click-through rates.
 

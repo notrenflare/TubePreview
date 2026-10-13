@@ -12,8 +12,8 @@ android {
     applicationId = "com.renflare.tubepreview"
     minSdk = 24
     targetSdk = 37
-    versionCode = 3
-    versionName = "1.0"
+    versionCode = 4
+    versionName = "1.1.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
@@ -37,7 +37,8 @@ android {
   buildTypes {
     release {
       isCrunchPngs = false
-      isMinifyEnabled = false
+      isMinifyEnabled = true
+      isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
       if (!releaseKeystorePath.isNullOrBlank()) {
         signingConfig = signingConfigs.getByName("release")
