@@ -7,8 +7,8 @@ Source, issues, and signed Android releases live in [notrenflare/TubePreview](ht
 Always increase `versionCode` for each release and set `versionName` to the public release version. Keep the application ID `com.renflare.tubepreview` and the release signing identity so installed users can update without losing data.
 
 ```sh
-bash ./gradlew :app:testDebugUnitTest :app:assembleRelease :app:lintRelease
-node scripts/sign-release.mjs app/build/outputs/apk/release/app-release-unsigned.apk /private/tmp/TubePreview-1.1.0.apk
+bash ./gradlew clean :app:testDebugUnitTest :app:lintDebug :app:lintRelease :app:assembleRelease --no-build-cache --no-configuration-cache
+node scripts/sign-release.mjs app/build/outputs/apk/release/app-release-unsigned.apk /private/tmp/TubePreview-1.1.1.apk
 ```
 
 The maintainer helper reads the existing encrypted identity from macOS Keychain, verifies its certificate, signs the APK, and removes temporary key material. It never generates or rotates keys. It refuses to overwrite an existing output.
@@ -27,11 +27,13 @@ The signing identity must be backed up securely outside Git. Losing it can preve
 
 ## Verification and publication
 
-1. Run unit tests, debug/release builds, lint, resolved-dependency advisory checks, and complete Git-history secret scans.
-2. Verify the signed APK with Android SDK `apksigner verify --verbose --print-certs`. Check package name, version, minimum SDK, permissions, and non-debuggable status.
-3. Install the exact signed binary on a test device. Check onboarding, image import, avatar framing, comparison cycling, theme switching, refresh, and persisted settings.
-4. Generate `SHA256SUMS.txt` using `shasum -a 256`. Include `SIGNING_CERTIFICATE.txt` and release notes linking the source commit.
-5. Assemble a draft release with all assets, then publish. Verify that an anonymous download matches the local checksum and certificate.
+1. Commit the release version before building so packaged source metadata identifies the release commit. Run a clean build, unit tests, debug/release lint, resolved-dependency advisory checks, and complete Git-history secret scans.
+2. Verify the signed APK with Android SDK `apksigner verify --verbose --print-certs` and `zipalign`. Check package name, version, minimum SDK, permissions, and non-debuggable status.
+3. Install the exact signed binary on a test device. Check onboarding, image import, avatar framing, comparison cycling, theme switching, refresh, and persisted settings. Record any ordinary installation warning.
+4. Generate a SHA-256 checksum and include the signing certificate fingerprint. Upload this exact APK to VirusTotal and record completed results; engines that cannot process the file are not clean verdicts.
+5. Wait for CI, tag the verified source commit, and publish the release with the signed APK and verification files. Confirm that an anonymous download matches the local checksum and certificate.
+6. If Play Protect flags the APK, submit its package name, exact VirusTotal hash, and public download link through Google's review form. Record submission acknowledgment separately from any review decision or device outcome.
+7. Update the dated release verification record. Repeat binary checks and vendor review for each new APK; results do not transfer between hashes.
 
 Published APKs and release tags are preserved. Releases are published in this repository. Documentation may be corrected without replacing a binary.
 
