@@ -4,9 +4,11 @@
 
 <h1 align="center">TubePreview</h1>
 <p align="center">Preview your YouTube thumbnails and titles before you publish.</p>
+<p align="center">Created by <a href="https://dawoodzubair.com/tubepreview/">Dawood Zubair</a></p>
 
 <p align="center">
   <a href="https://github.com/notrenflare/TubePreview/releases/latest"><strong>Download for Android</strong></a>
+  · <a href="https://dawoodzubair.com/tubepreview/">Website</a>
   · <a href="#features">Features</a>
   · <a href="#build-from-source">Build from source</a>
   · <a href="https://github.com/notrenflare/TubePreview/issues">Report a bug</a>
@@ -18,7 +20,7 @@
   <img src="https://img.shields.io/badge/Android-7.0%2B-3DDC84?logo=android&amp;logoColor=white" alt="Android 7.0 or newer" />
 </p>
 
-See how your next YouTube video looks in a familiar mobile feed. Add your thumbnail, title, and channel branding, then compare alternatives among sample videos. No account or YouTube sign-in required.
+TubePreview is a free, open-source Android app created by [Dawood Zubair](https://dawoodzubair.com/), a YouTube producer and video team lead. See how your next YouTube video looks in a familiar mobile feed. Add your thumbnail, title, and channel branding, then compare alternatives among sample videos. No account or YouTube sign-in required.
 
 <table align="center">
   <tr>
@@ -95,4 +97,4 @@ Bug reports and focused improvements are welcome. Read [CONTRIBUTING.md](CONTRIB
 
 TubePreview is independent and is not affiliated with YouTube or Google. YouTube and YouTube Shorts are trademarks of Google LLC.
 
-Made with ❤️ by [renflare](https://github.com/notrenflare), with contributions from [Codex](https://github.com/codex).
+Created by [Dawood Zubair](https://dawoodzubair.com/tubepreview/) ([@notrenflare](https://github.com/notrenflare)), with contributions from [Codex](https://github.com/codex).
